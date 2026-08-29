@@ -29,21 +29,29 @@ namespace GameFramework
     public class SingletonAutoMono<T> : MonoBehaviour where T : MonoBehaviour
     {
         private static T instance;
+        //退出保险丝：应用退出/停止运行时各物体销毁顺序随机，
+        //若其他类的OnDestroy晚于本类销毁并访问Instance，会触发"退出中创建新物体"
+        //→Unity报"Some objects were not cleaned up when closing the scene"
+        private static bool isQuit = false;
 
         public static T Instance
         {
             get
             {
-                if (instance == null)
+                //退出过程中不再创建，直接返回现有引用（可能已销毁，由调用方判空）
+                if (instance == null && !isQuit)
                 {
-                    // 用类型名命名对象，Hierarchy里一眼能认出是哪个管理器
                     GameObject obj = new GameObject(typeof(T).Name);
-                    // 管理器属于全局模块，切换场景不能被销毁
                     DontDestroyOnLoad(obj);
                     instance = obj.AddComponent<T>();
                 }
                 return instance;
             }
+        }
+
+        protected virtual void OnApplicationQuit()
+        {
+            isQuit = true;
         }
     }
 }

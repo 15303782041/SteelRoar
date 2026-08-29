@@ -65,6 +65,11 @@ public class MonsterObj : TankBaseObj
     // Update is called once per frame
     void Update()
     {
+        //游戏暂停（timeScale=0）时AI冻结：
+        //否则Time.deltaTime=0会让开火冷却永远满足→暂停状态下每帧无限开火
+        if (Time.timeScale == 0f)
+            return;
+
         //状态机驱动：所有行为和转移判定都在状态类里
         nowState?.Update();
 
@@ -93,6 +98,7 @@ public class MonsterObj : TankBaseObj
     /// <summary>巡逻移动：朝随机巡逻点走，到达换下一个点</summary>
     public void PatrolMove()
     {
+        //巡逻点为空或已销毁（如外部物体被删）时重新随机
         if (targetPos == null)
         {
             RandomPos();
@@ -108,6 +114,8 @@ public class MonsterObj : TankBaseObj
     /// <summary>追击移动：面朝玩家直线逼近</summary>
     public void ChaseMove()
     {
+        if (lookAtTarget == null)
+            return;
         this.transform.LookAt(lookAtTarget);
         this.transform.Translate(Vector3.forward * moveSpeed * Time.deltaTime);
     }
@@ -115,6 +123,8 @@ public class MonsterObj : TankBaseObj
     /// <summary>攻击：炮台瞄准玩家，冷却到了就开火</summary>
     public void AimAndTryFire()
     {
+        if (lookAtTarget == null || tankHead == null)
+            return;
         tankHead.LookAt(lookAtTarget);
         nowTime += Time.deltaTime;
         if (nowTime >= fireOffsetTime)
@@ -127,6 +137,8 @@ public class MonsterObj : TankBaseObj
     /// <summary>撤退移动：背向玩家拉开距离</summary>
     public void MoveAwayFromPlayer()
     {
+        if (lookAtTarget == null)
+            return;
         Vector3 awayDir = (this.transform.position - lookAtTarget.position).normalized;
         this.transform.LookAt(this.transform.position + awayDir);
         this.transform.Translate(Vector3.forward * moveSpeed * Time.deltaTime);
@@ -158,7 +170,18 @@ public class MonsterObj : TankBaseObj
     {
         if (randomPos.Length == 0)
             return;
-        targetPos = randomPos[Random.Range(0, randomPos.Length)];
+
+        //随机挑一个"还活着"的巡逻点（被销毁的点跳过），最多尝试5次
+        for (int i = 0; i < 5; i++)
+        {
+            Transform p = randomPos[Random.Range(0, randomPos.Length)];
+            if (p != null)
+            {
+                targetPos = p;
+                return;
+            }
+        }
+        targetPos = null;
     }
 
     public override void Fire()
