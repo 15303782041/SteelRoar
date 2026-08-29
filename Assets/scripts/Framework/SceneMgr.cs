@@ -22,11 +22,12 @@ namespace GameFramework
             AsyncOperation ao = SceneManager.LoadSceneAsync(name);
             while (!ao.isDone)
             {
-                // 广播加载进度0~1。当前没有Loading界面所以无监听者，属正常；
-                // Day 10 接入LoadingPanel后，进度条监听此事件刷新
+                // 广播加载进度0~1，LoadingPanel监听刷新进度条
                 EventCenter.Instance.EventTrigger(EEventType.Loading, ao.progress);
                 yield return null;
             }
+            //加载完成：进度拉满（LoadingPanel据此隐藏）
+            EventCenter.Instance.EventTrigger(EEventType.Loading, 1f);
             callback?.Invoke();
         }
     }

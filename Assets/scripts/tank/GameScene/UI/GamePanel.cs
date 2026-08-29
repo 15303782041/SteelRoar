@@ -28,10 +28,9 @@ public class GamePanel : BasePanel<GamePanel>
     public float hpW = 350;
 
     //事件委托必须用成员变量存住引用——直接传lambda的话OnDisable时无法解绑（匿名函数每次引用不同）
+    //终局结算（PlayerDead/GameWin→冻结+面板+存档）已移交GameMgr统一裁决，本面板只管战斗内HUD
     private Action<object> onPlayerHurt;
     private Action<object> onMonsterDead;
-    private Action<object> onPlayerDead;
-    private Action<object> onGameWin;
 
     void OnEnable()
     {
@@ -43,22 +42,9 @@ public class GamePanel : BasePanel<GamePanel>
             UpdateHP((int)hpInfo[1], (int)hpInfo[0]);
         };
         onMonsterDead = (info) => AddScore((int)info);
-        onPlayerDead = (info) =>
-        {
-            //暂停与结算面板属于UI层职责（Day 10统一收编GameMgr）
-            Time.timeScale = 0;
-            LossPanel.Instance.ShowMe();
-        };
-        onGameWin = (info) =>
-        {
-            Time.timeScale = 0;
-            WinPanel.Instance.ShowMe();
-        };
 
         EventCenter.Instance.AddEventListener(EEventType.PlayerHurt, onPlayerHurt);
         EventCenter.Instance.AddEventListener(EEventType.MonsterDead, onMonsterDead);
-        EventCenter.Instance.AddEventListener(EEventType.PlayerDead, onPlayerDead);
-        EventCenter.Instance.AddEventListener(EEventType.GameWin, onGameWin);
     }
 
     void OnDisable()
@@ -66,8 +52,6 @@ public class GamePanel : BasePanel<GamePanel>
         //解绑必须在禁用时执行，否则对象销毁后残留监听→空引用
         EventCenter.Instance.RemoveEventListener(EEventType.PlayerHurt, onPlayerHurt);
         EventCenter.Instance.RemoveEventListener(EEventType.MonsterDead, onMonsterDead);
-        EventCenter.Instance.RemoveEventListener(EEventType.PlayerDead, onPlayerDead);
-        EventCenter.Instance.RemoveEventListener(EEventType.GameWin, onGameWin);
     }
 
     void Start()

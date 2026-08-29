@@ -50,6 +50,9 @@ public class WaveManager : MonoBehaviour
 
     void Start()
     {
+        //通知流程管理器"本局开始"（顺带完成GameMgr单例创建、读档、解冻时钟）
+        GameMgr.Instance.BeginRun();
+
         WaveConfig config = JsonManager.Instance.LoadData<WaveConfig>("WaveConfig");
         if (config == null || config.waves == null || config.waves.Count == 0)
         {
