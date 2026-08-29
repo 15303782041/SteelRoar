@@ -10,7 +10,15 @@ public class PlayerObj : TankBaseObj
     //武器父对象位置
     public Transform weaponPos;
 
+    //地面瞄准平面（y=0的数学平面，只做射线求交，不依赖场景碰撞体）
+    private Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
+    private Camera mainCam;
+
     // Start is called before the first frame update
+    void Start()
+    {
+        mainCam = Camera.main;
+    }
 
     void Update()
     {
@@ -29,7 +37,17 @@ public class PlayerObj : TankBaseObj
         //知识点
         //1.transform旋转
         //2.input 鼠标轴向输入检测
-        tankHead.transform.Rotate(Input.GetAxis("Mouse X") * Vector3.up * headRoundSpeed * Time.deltaTime);
+        //3.鼠标绝对瞄准：摄像机→鼠标射线与地面平面求交，炮台直接朝向落点
+        //（原教程为MouseX相对旋转：帧率越高转得越慢、且需甩鼠标追人，改为射线绝对瞄准）
+        Ray aimRay = mainCam.ScreenPointToRay(Input.mousePosition);
+        if (groundPlane.Raycast(aimRay, out float enter))
+        {
+            Vector3 aimPoint = aimRay.GetPoint(enter);
+            Vector3 aimDir = aimPoint - tankHead.position;
+            aimDir.y = 0;
+            if (aimDir.sqrMagnitude > 0.01f)
+                tankHead.rotation = Quaternion.LookRotation(aimDir);
+        }
 
         //4.鼠标左键开火
         //input
