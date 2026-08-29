@@ -41,12 +41,12 @@ namespace GameFramework
         /// </summary>
         public void PlayOneShot(string name)
         {
-            if (!isOpenSound) return;
+            if (!GameDataMgr.Instance.musicData.isOpenSound) return;
             AudioClip clip = Resources.Load<AudioClip>("Music/Sound/" + name);
             if (clip == null) return;
             AudioSource source = this.gameObject.AddComponent<AudioSource>();
             source.clip = clip;
-            source.volume = soundValue;
+            source.volume = GameDataMgr.Instance.musicData.soundValue;
             source.Play();
             Destroy(source, clip.length);   // 播完即销毁（一次性组件，不进池）
         }

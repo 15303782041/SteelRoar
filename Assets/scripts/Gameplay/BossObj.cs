@@ -40,7 +40,6 @@ public class BossObj : TankBaseObj
     private float chargeTimer = 0;
     private Vector3 chargeDir;
     private bool chargeHit = false;
-    private bool summoned = false;
 
     private PlayerObj playerObj;
 
@@ -59,7 +58,6 @@ public class BossObj : TankBaseObj
         speedMult = 1f;
         nowPhase = BossPhase.One;
         charging = false;
-        summoned = false;
     }
 
     void Update()
