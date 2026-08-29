@@ -10,6 +10,14 @@ public class PlayerObj : TankBaseObj
     //武器父对象位置
     public Transform weaponPos;
 
+    [Header("肉鸽Buff")]
+    private readonly List<BuffInfo> nowBuffs = new List<BuffInfo>();  // 本局已获得的Buff
+    private int shieldLayers = 0;                                     // 护盾层数（每层挡一次伤害）
+    private float lifesteal = 0f;                                     // 每次命中回复的生命
+
+    /// <summary>吸血数值（子弹命中敌方坦克时由BulletObj读取）</summary>
+    public float LifestealValue => lifesteal;
+
     //地面瞄准平面（y=0的数学平面，只做射线求交，不依赖场景碰撞体）
     private Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
     private Camera mainCam;
@@ -75,9 +83,17 @@ public class PlayerObj : TankBaseObj
     }
     public override void Wound(TankBaseObj other)
     {
+        //护盾优先：有护盾层时抵挡本次伤害（不掉血，掉一层盾）
+        if (shieldLayers > 0)
+        {
+            shieldLayers--;
+            EventCenter.Instance.EventTrigger(EEventType.PlayerHurt, new float[] { hp, maxHp });
+            return;
+        }
+
         base.Wound(other);
         //广播"玩家受伤"事件（参数：当前血量、最大血量），UI监听后刷新血条
-        EventCenter.Instance.EventTrigger(EEventType.PlayerHurt, new float[] { this.hp, this.maxHp });
+        EventCenter.Instance.EventTrigger(EEventType.PlayerHurt, new float[] { hp, maxHp });
     }
 
     public void ChangeWeapon(GameObject weapon)
@@ -96,4 +112,52 @@ public class PlayerObj : TankBaseObj
         //设置武器拥有者
         nowWeapon.SetFather(this);
     }
+
+    #region 肉鸽Buff（三选一面板调用）
+
+    /// <summary>某种Buff当前已叠的层数（面板据此过滤已达上限的选项）</summary>
+    public int GetStack(BuffType type)
+    {
+        int n = 0;
+        foreach (BuffInfo b in nowBuffs)
+            if (b.type == type)
+                n++;
+        return n;
+    }
+
+    /// <summary>应用一次Buff：立即修改对应属性（数值含义随BuffType变化）</summary>
+    public void AddBuff(BuffInfo info)
+    {
+        nowBuffs.Add(info);
+        switch (info.type)
+        {
+            case BuffType.Attack:
+                atk += Mathf.RoundToInt(info.value);
+                break;
+            case BuffType.MoveSpeed:
+                moveSpeed *= 1f + info.value;
+                break;
+            case BuffType.MaxHp:
+                maxHp += Mathf.RoundToInt(info.value);
+                hp += Mathf.RoundToInt(info.value);          // 上限提升的同时回复等量
+                EventCenter.Instance.EventTrigger(EEventType.PlayerHurt, new float[] { hp, maxHp });
+                break;
+            case BuffType.Lifesteal:
+                lifesteal += info.value;
+                break;
+            case BuffType.Shield:
+                shieldLayers += Mathf.RoundToInt(info.value);
+                break;
+        }
+        Debug.Log($"获得Buff：{info.buffName}（{GetStack(info.type)}/{info.stackMax}层）");
+    }
+
+    /// <summary>回复生命（吸血Buff用），不超过上限并刷新血条</summary>
+    public void Heal(float amount)
+    {
+        hp = Mathf.Min(maxHp, hp + Mathf.RoundToInt(amount));
+        EventCenter.Instance.EventTrigger(EEventType.PlayerHurt, new float[] { hp, maxHp });
+    }
+
+    #endregion
 }

@@ -114,6 +114,15 @@ public class WaveManager : MonoBehaviour
             EventCenter.Instance.EventTrigger(EEventType.WaveClear, wave.waveIndex);
             //波间喘息
             yield return new WaitForSeconds(2f);
+
+            //肉鸽三选一：非最终波结束后弹出，选择期间冻结战场，选完解冻进下一波
+            if (nowWave != waves[waves.Count - 1])
+            {
+                Time.timeScale = 0f;
+                BuffChoosePanel.Instance.Show();
+                yield return new WaitUntil(() => !BuffChoosePanel.IsOpen);
+                Time.timeScale = 1f;
+            }
         }
 
         //所有波次清空 → 广播胜利

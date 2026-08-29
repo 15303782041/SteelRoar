@@ -46,6 +46,9 @@ public class BulletObj : MonoBehaviour
             if(obj != null)
             {
                 obj.Wound(fatherObj);
+                //吸血Buff：玩家命中敌方坦克时回复生命
+                if (fatherObj is PlayerObj player && player.LifestealValue > 0)
+                    player.Heal(player.LifestealValue);
             }
                
 

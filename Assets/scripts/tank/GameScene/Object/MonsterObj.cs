@@ -238,12 +238,9 @@ public class MonsterObj : TankBaseObj
 
     public override void Wound(TankBaseObj other)
     {
-        int before = hp;
         base.Wound(other);
         //受伤时显示血条3秒
         showTime = 3;
-        //TODO: 血条不刷新问题的临时诊断日志，问题定位后删除
-        Debug.Log($"[{name}] 受伤：{before} → {hp}（伤害来源攻击力{other.atk}，我的防御{def}）");
     }
 
     #region 头顶UGUI血条（运行时创建，替代已删除的IMGUI老血条）
