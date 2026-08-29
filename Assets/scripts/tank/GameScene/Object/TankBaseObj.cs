@@ -1,3 +1,4 @@
+using GameFramework;
 using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
@@ -43,14 +44,8 @@ public abstract class TankBaseObj : MonoBehaviour
         if(deadEff!=null)
         {
             GameObject effObj = Instantiate(deadEff, this.transform.position, this.transform.rotation);
-            //由于该特效对象身上 直接关联了音效 所有我们可以在此处 把音效播放也控制了
-            AudioSource audioSource = effObj.GetComponent<AudioSource>();
-            //根据音乐数据 设置 音效 大小 和是否 播放
-            //设置音效大小
-            audioSource.volume = GameDataMgr.Instance.musicData.soundValue;
-            //音效是否播放
-            audioSource.mute = !GameDataMgr.Instance.musicData.isOpenSound;
-            audioSource.Play();
+            //特效自带音效，音量/开关/播放统一交给音乐管理器（原为6行手动设置）
+            MusicManager.Instance.SetSourceVolume(effObj.GetComponent<AudioSource>(), true);
         }
     }
 }

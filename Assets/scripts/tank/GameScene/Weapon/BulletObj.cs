@@ -50,17 +50,11 @@ public class BulletObj : MonoBehaviour
                
 
             //当子弹销毁时 可以创建一个爆炸特效
-            if(effObj != null) 
+            if(effObj != null)
             {
-                //创建爆炸特效
+                //创建爆炸特效，音量/开关统一交给音乐管理器（原为4行手动设置）
                 GameObject eff = Instantiate(effObj, this.transform.position, this.transform.rotation);
-                //该音效的音量和开启状态
-                AudioSource audioS = eff.GetComponent<AudioSource>();
-                //设置大小
-                audioS.volume = GameDataMgr.Instance.musicData.soundValue;
-                //开关
-                audioS.mute = !GameDataMgr.Instance.musicData.isOpenSound;
-
+                MusicManager.Instance.SetSourceVolume(eff.GetComponent<AudioSource>());
             }
             //子弹回池复用（不再Destroy，消除运行时GC）
             //本对象飞行期间无可变状态（moveSpeed恒定、fatherObj每次发射时重设），无需额外重置
