@@ -8,6 +8,8 @@ public enum BuffType
     MaxHp,       // 最大生命 +value，并回复等量
     Lifesteal,   // 每次命中敌方坦克回复value点生命
     Shield,      // 获得 value 层护盾（每层抵挡一次伤害）
+    Freeze,      // 弹种·冰冻：子弹命中使敌人减速value/层，持续2秒
+    Burn,        // 弹种·燃烧：子弹点燃敌人，每层每秒value点伤害，持续2秒
 }
 
 /// <summary>

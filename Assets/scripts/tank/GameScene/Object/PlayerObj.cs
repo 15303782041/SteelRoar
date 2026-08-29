@@ -125,6 +125,16 @@ public class PlayerObj : TankBaseObj
         return n;
     }
 
+    /// <summary>某种Buff的数值总和（弹种效果按层数×资产value叠加，如冰冻3层=0.6减速）</summary>
+    public float GetBuffValue(BuffType type)
+    {
+        float v = 0;
+        foreach (BuffInfo b in nowBuffs)
+            if (b.type == type)
+                v += b.value;
+        return v;
+    }
+
     /// <summary>应用一次Buff：立即修改对应属性（数值含义随BuffType变化）</summary>
     public void AddBuff(BuffInfo info)
     {

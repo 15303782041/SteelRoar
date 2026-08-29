@@ -49,6 +49,18 @@ public class BulletObj : MonoBehaviour
                 //吸血Buff：玩家命中敌方坦克时回复生命
                 if (fatherObj is PlayerObj player && player.LifestealValue > 0)
                     player.Heal(player.LifestealValue);
+
+                //元素弹种（玩家子弹专属）：按Buff层数附加冰冻/燃烧
+                if (fatherObj is PlayerObj p && obj is MonsterObj monster)
+                {
+                    float freezeValue = p.GetBuffValue(BuffType.Freeze);   // 每层0.2减速
+                    if (freezeValue > 0)
+                        monster.ApplySlow(1f - freezeValue, 2f);
+
+                    int burnDps = Mathf.RoundToInt(p.GetBuffValue(BuffType.Burn));  // 每层4点/秒
+                    if (burnDps > 0)
+                        monster.ApplyBurn(burnDps, 2f);
+                }
             }
                
 

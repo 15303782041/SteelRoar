@@ -33,6 +33,16 @@ public class MonsterObj : TankBaseObj
     public float detectDis = 12;        //侦测半径：玩家进入则追击
     public float retreatHpRate = 0.3f;  //血量低于该比例→撤退保命
 
+    [Header("异常状态（弹种系统）")]
+    private float slowMult = 1f;        //当前减速倍率（1=正常，<1被减速）
+    private float slowTimer = 0;
+    private float burnDps = 0;          //燃烧每秒伤害
+    private float burnTimer = 0;
+    private float burnAccum = 0;        //燃烧伤害积累器（hp是int，按秒取整扣）
+
+    /// <summary>实际移速=基础移速×减速倍率（所有移动代码统一走这里）</summary>
+    public float CurMoveSpeed => moveSpeed * slowMult;
+
     //FSM：每个怪物持有一套状态实例，Update里只驱动当前状态
     public PatrolState patrolState = new PatrolState();
     public ChaseState chaseState = new ChaseState();
@@ -51,6 +61,11 @@ public class MonsterObj : TankBaseObj
         hp = maxHp;
         nowTime = 0;
         showTime = 0;
+        slowMult = 1f;
+        slowTimer = 0;
+        burnDps = 0;
+        burnTimer = 0;
+        burnAccum = 0;
         ChangeState(patrolState);
     }
 
@@ -72,6 +87,31 @@ public class MonsterObj : TankBaseObj
 
         //状态机驱动：所有行为和转移判定都在状态类里
         nowState?.Update();
+
+        //异常状态跳蚤：燃烧按秒扣血，减速倒计时归零后恢复正常
+        if (slowTimer > 0)
+        {
+            slowTimer -= Time.deltaTime;
+            if (slowTimer <= 0)
+                slowMult = 1f;
+        }
+        if (burnTimer > 0)
+        {
+            burnTimer -= Time.deltaTime;
+            burnAccum += burnDps * Time.deltaTime;
+            if (burnAccum >= 1f)
+            {
+                int dmg = Mathf.FloorToInt(burnAccum);
+                burnAccum -= dmg;
+                hp -= dmg;
+                showTime = 3;                       //燃烧掉血也刷新血条显示
+                if (hp <= 0)
+                {
+                    hp = 0;
+                    Dead();                          //烧死了也走正常死亡流程（加分/回池）
+                }
+            }
+        }
 
         //血条显示计时
         if (showTime > 0)
@@ -106,7 +146,7 @@ public class MonsterObj : TankBaseObj
                 return;
         }
         this.transform.LookAt(targetPos);
-        this.transform.Translate(Vector3.forward * moveSpeed * Time.deltaTime);
+        this.transform.Translate(Vector3.forward * CurMoveSpeed * Time.deltaTime);
         if (Vector3.Distance(this.transform.position, targetPos.position) < 0.05f)
             RandomPos();
     }
@@ -117,7 +157,7 @@ public class MonsterObj : TankBaseObj
         if (lookAtTarget == null)
             return;
         this.transform.LookAt(lookAtTarget);
-        this.transform.Translate(Vector3.forward * moveSpeed * Time.deltaTime);
+        this.transform.Translate(Vector3.forward * CurMoveSpeed * Time.deltaTime);
     }
 
     /// <summary>攻击：炮台瞄准玩家，冷却到了就开火</summary>
@@ -141,7 +181,7 @@ public class MonsterObj : TankBaseObj
             return;
         Vector3 awayDir = (this.transform.position - lookAtTarget.position).normalized;
         this.transform.LookAt(this.transform.position + awayDir);
-        this.transform.Translate(Vector3.forward * moveSpeed * Time.deltaTime);
+        this.transform.Translate(Vector3.forward * CurMoveSpeed * Time.deltaTime);
     }
 
     /// <summary>玩家是否在侦测半径内</summary>
@@ -163,6 +203,24 @@ public class MonsterObj : TankBaseObj
     {
         return maxHp > 0 && (float)hp / maxHp <= retreatHpRate;
     }
+
+    #region 异常状态（弹种系统施加）
+
+    /// <summary>冰冻减速：倍率越小越慢，重复命中刷新持续时间</summary>
+    public void ApplySlow(float mult, float duration)
+    {
+        slowMult = Mathf.Clamp(Mathf.Min(slowMult, mult), 0.3f, 1f);
+        slowTimer = duration;
+    }
+
+    /// <summary>燃烧：每秒持续掉血，重复命中刷新持续时间与强度</summary>
+    public void ApplyBurn(int dps, float duration)
+    {
+        burnDps = Mathf.Max(burnDps, dps);
+        burnTimer = duration;
+    }
+
+    #endregion
 
     #endregion
 
