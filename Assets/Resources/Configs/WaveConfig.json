@@ -31,6 +31,14 @@
       "maxAlive": 6,
       "spawnInterval": 0.8,
       "isBossWave": false
+    },
+    {
+      "waveIndex": 5,
+      "monsterNames": ["Boss1"],
+      "monsterCount": 1,
+      "maxAlive": 1,
+      "spawnInterval": 3,
+      "isBossWave": true
     }
   ]
 }

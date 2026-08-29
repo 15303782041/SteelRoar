@@ -82,20 +82,28 @@ public class WaveManager : MonoBehaviour
             nowWave = wave;
             EventCenter.Instance.EventTrigger(EEventType.WaveStart, wave.waveIndex);
 
-            //阶段一：持续刷怪，直到本波总数刷满；场上存活数随时不超过上限
-            spawnCount = 0;
-            while (spawnCount < wave.monsterCount)
+            if (wave.isBossWave)
             {
-                if (aliveCount < wave.maxAlive)
+                //Boss波：只刷一只Boss，等待玩家击杀
+                SpawnBoss();
+            }
+            else
+            {
+                //阶段一：持续刷怪，直到本波总数刷满；场上存活数随时不超过上限
+                spawnCount = 0;
+                while (spawnCount < wave.monsterCount)
                 {
-                    SpawnOne();
-                    spawnCount++;
-                    yield return new WaitForSeconds(wave.spawnInterval);
-                }
-                else
-                {
-                    //场上满了，等一帧再查
-                    yield return null;
+                    if (aliveCount < wave.maxAlive)
+                    {
+                        SpawnOne();
+                        spawnCount++;
+                        yield return new WaitForSeconds(wave.spawnInterval);
+                    }
+                    else
+                    {
+                        //场上满了，等一帧再查
+                        yield return null;
+                    }
                 }
             }
 
@@ -127,5 +135,52 @@ public class WaveManager : MonoBehaviour
         monster.randomPos = patrolPoints;
 
         aliveCount++;
+    }
+
+    /// <summary>Boss波：从出生点刷出Boss并注入玩家</summary>
+    private void SpawnBoss()
+    {
+        GameObject prefab = Resources.Load<GameObject>("Prefabs/Game/Object/Boss1");
+        if (prefab == null)
+        {
+            Debug.LogWarning("Boss预制体不存在：Resources/Prefabs/Game/Object/Boss1");
+            return;
+        }
+
+        Transform point = spawnPoints.Length > 0
+            ? spawnPoints[Random.Range(0, spawnPoints.Length)]
+            : transform;
+
+        GameObject obj = PoolManager.Instance.GetObj(prefab);
+        obj.transform.position = point.position;
+
+        BossObj boss = obj.GetComponent<BossObj>();
+        boss.Init(player);
+
+        aliveCount++;
+    }
+
+    /// <summary>
+    /// Boss召唤小怪专用：围绕center生成count只并计入存活数，返回实际生成数量。
+    /// 计入存活数的原因：召唤怪被击杀同样会触发MonsterDead递减，
+    /// 只减不增会让计数变负、导致Boss还活着就被判定"本波清空"
+    /// </summary>
+    public int SpawnSummons(string name, int count, Vector3 center)
+    {
+        int spawned = 0;
+        for (int i = 0; i < count; i++)
+        {
+            //围绕Boss随机散开，避免小怪叠在一起
+            Vector3 pos = center + new Vector3(Random.Range(-3f, 3f), 0, Random.Range(-3f, 3f));
+            MonsterObj m = MonsterFactory.Create(name, pos);
+            if (m == null)
+                continue;
+
+            m.lookAtTarget = player;
+            m.randomPos = patrolPoints;
+            aliveCount++;
+            spawned++;
+        }
+        return spawned;
     }
 }

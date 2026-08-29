@@ -36,6 +36,22 @@ namespace GameFramework
         }
 
         /// <summary>
+        /// 按资源名播放音效（Resources/Music/Sound/下）。
+        /// 音效资源缺失时静默跳过，防止用null clip创建空AudioSource
+        /// </summary>
+        public void PlayOneShot(string name)
+        {
+            if (!isOpenSound) return;
+            AudioClip clip = Resources.Load<AudioClip>("Music/Sound/" + name);
+            if (clip == null) return;
+            AudioSource source = this.gameObject.AddComponent<AudioSource>();
+            source.clip = clip;
+            source.volume = soundValue;
+            source.Play();
+            Destroy(source, clip.length);   // 播完即销毁（一次性组件，不进池）
+        }
+
+        /// <summary>
         /// 统一设置某个音效源的音量与开关（替代散落各处的重复代码）。
         /// play为true时顺带播放（用于没有勾选PlayOnAwake的音效源）
         /// </summary>
