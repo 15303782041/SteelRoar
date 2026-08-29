@@ -33,3 +33,9 @@ crashlytics-build.properties
 # OS junk
 .DS_Store
 Thumbs.db
+
+# 本地私有文档（面试准备材料，不入公开仓库）
+.claude/
+Temp.txt
+Docs/
+升级方案.md
