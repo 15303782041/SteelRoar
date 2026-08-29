@@ -89,7 +89,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1238920094442437292}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 664512c6247e41d4da51175492a89cd9, type: 3}
+  m_Script: {fileID: 11500000, guid: 8d3797f77c0951c4c962ea90cabd379b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   rotateSpeed: 120
@@ -148,7 +148,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1238920094442449026}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b00d21c633091d94c96866e1844d6425, type: 3}
+  m_Script: {fileID: 11500000, guid: 857ed65b262458d4e96928cd8704b04b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   type: 0

@@ -277,7 +277,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7593686673838272027}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ef2192e2821dc574c9c4bd65d7660621, type: 3}
+  m_Script: {fileID: 11500000, guid: ab67f0e9312d5054192fb372242c74d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   atk: 5
@@ -336,7 +336,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7593686673838305341}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 664512c6247e41d4da51175492a89cd9, type: 3}
+  m_Script: {fileID: 11500000, guid: 8d3797f77c0951c4c962ea90cabd379b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   rotateSpeed: 150

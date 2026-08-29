@@ -55,7 +55,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7419057460485855959}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2d8493e648129b34b961b2ef1c294a0d, type: 3}
+  m_Script: {fileID: 11500000, guid: 58fc7b4116bc2f44cb71acebd0a4d43c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   rewardObjects:
