@@ -43,8 +43,13 @@ public class MonsterTower : TankBaseObj
     {
         for (int i = 0; i < shootPos.Length; i++)
         {
+            //跳过已销毁/未赋值的开火点
+            if (shootPos[i] == null)
+                continue;
             //从对象池取子弹（不再Instantiate）
             GameObject obj = PoolManager.Instance.GetObj(bulletObj);
+            if (obj == null)
+                continue;
             obj.transform.position = shootPos[i].position;
             obj.transform.rotation = shootPos[i].rotation;
             //设置子弹的拥有者方便以后进行属性计算
