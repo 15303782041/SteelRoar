@@ -47,6 +47,12 @@ namespace GameFramework
     /// </summary>
     public class PoolManager : SingletonAutoMono<PoolManager>
     {
+        /// <summary>
+        /// 对象池总开关（Profiler A/B量化实验用）：false时GetObj退化为直接Instantiate、
+        /// PushObj退化为Destroy——用于实测"池化 vs 直接创建"的GC Alloc差异，数据进README。平时保持true
+        /// </summary>
+        public static bool PoolsEnabled = true;
+
         private Dictionary<string, PoolData> poolDic = new Dictionary<string, PoolData>();
         private GameObject poolRootObj;         // 所有池子的总根节点
 
@@ -54,7 +60,7 @@ namespace GameFramework
         public GameObject GetObj(GameObject prefab)
         {
             GameObject obj = null;
-            if (poolDic.ContainsKey(prefab.name) && poolDic[prefab.name].poolQueue.Count > 0)
+            if (PoolsEnabled && poolDic.ContainsKey(prefab.name) && poolDic[prefab.name].poolQueue.Count > 0)
                 obj = poolDic[prefab.name].GetObj();
             else
                 obj = Instantiate(prefab);
@@ -71,9 +77,14 @@ namespace GameFramework
             return obj;
         }
 
-        /// <summary>回收对象进池子（按预制体名归池）</summary>
+        /// <summary>回收对象进池子（按预制体名归池）；池总开关关闭时退化为Destroy（A/B对照用）</summary>
         public void PushObj(GameObject obj)
         {
+            if (!PoolsEnabled)
+            {
+                Destroy(obj);
+                return;
+            }
             // Instantiate出来的对象名字带"(Clone)"后缀，必须剥掉才能和预制体名对上
             string name = obj.name.Replace("(Clone)", "");
             if (!poolDic.ContainsKey(name))
