@@ -1,0 +1,131 @@
+using System.Collections;
+using System.Collections.Generic;
+using GameFramework;
+using UnityEngine;
+
+/// <summary>
+/// 单波次的刷怪配置，对应 WaveConfig.json 中的一段
+/// </summary>
+[System.Serializable]
+public class WaveInfo
+{
+    public int waveIndex;               // 第几波
+    public List<string> monsterNames;   // 本波怪物类型池（每次生成随机抽取一种）
+    public int monsterCount;            // 本波怪物总数
+    public int maxAlive = 5;            // 场上同时存在的存活上限
+    public float spawnInterval = 1.5f;  // 生成间隔（秒）
+    public bool isBossWave;             // Boss波标记（Day 8使用）
+}
+
+/// <summary>整个波次配置表的根结构，对应 WaveConfig.json</summary>
+[System.Serializable]
+public class WaveConfig
+{
+    public List<WaveInfo> waves;
+}
+
+/// <summary>
+/// 波次管理器：按配置逐波刷怪，本波全灭后进入下一波，全部清空则广播胜利。
+///
+/// 设计说明：本类需要Inspector拖入出生点/巡逻点/玩家引用（预制体无法引用场景对象），
+/// 所以不用SingletonAutoMono自动创建，而是作为普通组件挂载在场景中的WaveManager物体上。
+/// 刷怪节奏：总数达到monsterCount为止；期间场上存活数不超过maxAlive；全灭才开下一波。
+/// </summary>
+public class WaveManager : MonoBehaviour
+{
+    [Header("怪物出生点")]
+    public Transform[] spawnPoints;
+    [Header("怪物巡逻点（生成时注入怪物）")]
+    public Transform[] patrolPoints;
+    [Header("玩家（生成时注入为瞄准目标）")]
+    public Transform player;
+
+    private List<WaveInfo> waves;
+    private WaveInfo nowWave;
+    private int aliveCount = 0;     // 场上存活怪物数（MonsterDead事件递减）
+    private int spawnCount = 0;     // 本波已生成数量
+
+    //事件委托成员变量：存住引用才能解绑（lambda匿名函数无法解绑）
+    private System.Action<object> onMonsterDead;
+
+    void Start()
+    {
+        WaveConfig config = JsonManager.Instance.LoadData<WaveConfig>("WaveConfig");
+        if (config == null || config.waves == null || config.waves.Count == 0)
+        {
+            Debug.LogWarning("WaveConfig.json加载失败或为空，波次系统未启动");
+            return;
+        }
+        waves = config.waves;
+
+        onMonsterDead = (info) => aliveCount--;
+        EventCenter.Instance.AddEventListener(EEventType.MonsterDead, onMonsterDead);
+
+        StartCoroutine(RunWaves());
+    }
+
+    private void OnDestroy()
+    {
+        //场景卸载时解绑，防止残留监听
+        if (onMonsterDead != null)
+            EventCenter.Instance.RemoveEventListener(EEventType.MonsterDead, onMonsterDead);
+    }
+
+    /// <summary>波次主循环：逐波执行 刷怪→等全灭→广播波次清除</summary>
+    private IEnumerator RunWaves()
+    {
+        //开局缓冲，让玩家准备
+        yield return new WaitForSeconds(1.5f);
+
+        foreach (WaveInfo wave in waves)
+        {
+            nowWave = wave;
+            EventCenter.Instance.EventTrigger(EEventType.WaveStart, wave.waveIndex);
+
+            //阶段一：持续刷怪，直到本波总数刷满；场上存活数随时不超过上限
+            spawnCount = 0;
+            while (spawnCount < wave.monsterCount)
+            {
+                if (aliveCount < wave.maxAlive)
+                {
+                    SpawnOne();
+                    spawnCount++;
+                    yield return new WaitForSeconds(wave.spawnInterval);
+                }
+                else
+                {
+                    //场上满了，等一帧再查
+                    yield return null;
+                }
+            }
+
+            //阶段二：等本波怪物全部被消灭
+            while (aliveCount > 0)
+                yield return null;
+
+            EventCenter.Instance.EventTrigger(EEventType.WaveClear, wave.waveIndex);
+            //波间喘息
+            yield return new WaitForSeconds(2f);
+        }
+
+        //所有波次清空 → 广播胜利
+        EventCenter.Instance.EventTrigger(EEventType.GameWin, null);
+    }
+
+    /// <summary>按配置生成一只怪物：随机出生点+随机类型，并注入运行时依赖</summary>
+    private void SpawnOne()
+    {
+        Transform point = spawnPoints[Random.Range(0, spawnPoints.Length)];
+        string monsterName = nowWave.monsterNames[Random.Range(0, nowWave.monsterNames.Count)];
+
+        MonsterObj monster = MonsterFactory.Create(monsterName, point.position);
+        if (monster == null)
+            return;
+
+        //预制体无法引用场景对象，运行时依赖由波次管理器注入
+        monster.lookAtTarget = player;
+        monster.randomPos = patrolPoints;
+
+        aliveCount++;
+    }
+}

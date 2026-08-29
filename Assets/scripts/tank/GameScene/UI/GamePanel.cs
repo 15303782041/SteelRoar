@@ -31,6 +31,7 @@ public class GamePanel : BasePanel<GamePanel>
     private Action<object> onPlayerHurt;
     private Action<object> onMonsterDead;
     private Action<object> onPlayerDead;
+    private Action<object> onGameWin;
 
     void OnEnable()
     {
@@ -48,10 +49,16 @@ public class GamePanel : BasePanel<GamePanel>
             Time.timeScale = 0;
             LossPanel.Instance.ShowMe();
         };
+        onGameWin = (info) =>
+        {
+            Time.timeScale = 0;
+            WinPanel.Instance.ShowMe();
+        };
 
         EventCenter.Instance.AddEventListener(EEventType.PlayerHurt, onPlayerHurt);
         EventCenter.Instance.AddEventListener(EEventType.MonsterDead, onMonsterDead);
         EventCenter.Instance.AddEventListener(EEventType.PlayerDead, onPlayerDead);
+        EventCenter.Instance.AddEventListener(EEventType.GameWin, onGameWin);
     }
 
     void OnDisable()
@@ -60,6 +67,7 @@ public class GamePanel : BasePanel<GamePanel>
         EventCenter.Instance.RemoveEventListener(EEventType.PlayerHurt, onPlayerHurt);
         EventCenter.Instance.RemoveEventListener(EEventType.MonsterDead, onMonsterDead);
         EventCenter.Instance.RemoveEventListener(EEventType.PlayerDead, onPlayerDead);
+        EventCenter.Instance.RemoveEventListener(EEventType.GameWin, onGameWin);
     }
 
     void Start()

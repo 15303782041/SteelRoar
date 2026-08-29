@@ -5,7 +5,7 @@
       "prefabName": "Monster1",
       "atk": 10,
       "def": 0,
-      "maxHp": 50,
+      "maxHp": 100,
       "moveSpeed": 5,
       "fireDis": 8,
       "fireOffsetTime": 1.5,

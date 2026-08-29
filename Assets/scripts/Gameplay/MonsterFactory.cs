@@ -29,8 +29,8 @@ public class MonsterFactory
     }
 
     /// <summary>
-    /// 按配置名生成怪物：预制体需位于 Resources/Prefabs/Game/ 下。
-    /// 供 Day 7 波次系统调用；场景中手动摆放的怪物走 MonsterObj.Init 直接应用配置
+    /// 按配置名生成怪物：预制体需位于 Resources/Prefabs/Game/Object/ 下。
+    /// 供波次系统调用；场景中手动摆放的怪物走 MonsterObj.Init 直接应用配置
     /// </summary>
     public static MonsterObj Create(string monsterName, Vector3 pos)
     {
@@ -41,10 +41,10 @@ public class MonsterFactory
             return null;
         }
 
-        GameObject prefab = Resources.Load<GameObject>("Prefabs/Game/" + info.prefabName);
+        GameObject prefab = Resources.Load<GameObject>("Prefabs/Game/Object/" + info.prefabName);
         if (prefab == null)
         {
-            Debug.LogWarning($"怪物预制体不存在：Resources/Prefabs/Game/{info.prefabName}");
+            Debug.LogWarning($"怪物预制体不存在：Resources/Prefabs/Game/Object/{info.prefabName}");
             return null;
         }
 

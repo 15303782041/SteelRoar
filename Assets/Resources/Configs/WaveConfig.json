@@ -1,0 +1,36 @@
+{
+  "waves": [
+    {
+      "waveIndex": 1,
+      "monsterNames": ["Monster1"],
+      "monsterCount": 5,
+      "maxAlive": 3,
+      "spawnInterval": 1.5,
+      "isBossWave": false
+    },
+    {
+      "waveIndex": 2,
+      "monsterNames": ["Monster1"],
+      "monsterCount": 8,
+      "maxAlive": 4,
+      "spawnInterval": 1.2,
+      "isBossWave": false
+    },
+    {
+      "waveIndex": 3,
+      "monsterNames": ["Monster1"],
+      "monsterCount": 12,
+      "maxAlive": 5,
+      "spawnInterval": 1.0,
+      "isBossWave": false
+    },
+    {
+      "waveIndex": 4,
+      "monsterNames": ["Monster1"],
+      "monsterCount": 16,
+      "maxAlive": 6,
+      "spawnInterval": 0.8,
+      "isBossWave": false
+    }
+  ]
+}
