@@ -1,6 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
+using GameFramework;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -25,6 +26,41 @@ public class GamePanel : BasePanel<GamePanel>
     public float nowTime=0;
     private int time;
     public float hpW = 350;
+
+    //事件委托必须用成员变量存住引用——直接传lambda的话OnDisable时无法解绑（匿名函数每次引用不同）
+    private Action<object> onPlayerHurt;
+    private Action<object> onMonsterDead;
+    private Action<object> onPlayerDead;
+
+    void OnEnable()
+    {
+        //组装委托（订阅与退订必须用同一个引用）
+        onPlayerHurt = (info) =>
+        {
+            //参数约定：float[]{当前血量, 最大血量}
+            float[] hpInfo = info as float[];
+            UpdateHP((int)hpInfo[1], (int)hpInfo[0]);
+        };
+        onMonsterDead = (info) => AddScore((int)info);
+        onPlayerDead = (info) =>
+        {
+            //暂停与结算面板属于UI层职责（Day 10统一收编GameMgr）
+            Time.timeScale = 0;
+            LossPanel.Instance.ShowMe();
+        };
+
+        EventCenter.Instance.AddEventListener(EEventType.PlayerHurt, onPlayerHurt);
+        EventCenter.Instance.AddEventListener(EEventType.MonsterDead, onMonsterDead);
+        EventCenter.Instance.AddEventListener(EEventType.PlayerDead, onPlayerDead);
+    }
+
+    void OnDisable()
+    {
+        //解绑必须在禁用时执行，否则对象销毁后残留监听→空引用
+        EventCenter.Instance.RemoveEventListener(EEventType.PlayerHurt, onPlayerHurt);
+        EventCenter.Instance.RemoveEventListener(EEventType.MonsterDead, onMonsterDead);
+        EventCenter.Instance.RemoveEventListener(EEventType.PlayerDead, onPlayerDead);
+    }
 
     void Start()
     {

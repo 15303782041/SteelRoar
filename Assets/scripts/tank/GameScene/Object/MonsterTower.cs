@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using GameFramework;
 using UnityEngine;
 
 public class MonsterTower : TankBaseObj
@@ -42,8 +43,10 @@ public class MonsterTower : TankBaseObj
     {
         for (int i = 0; i < shootPos.Length; i++)
         {
-            //实列话子弹
-            GameObject obj = Instantiate(bulletObj,shootPos[i].position,shootPos[i].rotation);
+            //从对象池取子弹（不再Instantiate）
+            GameObject obj = PoolManager.Instance.GetObj(bulletObj);
+            obj.transform.position = shootPos[i].position;
+            obj.transform.rotation = shootPos[i].rotation;
             //设置子弹的拥有者方便以后进行属性计算
             BulletObj bullet = obj.GetComponent<BulletObj>();
             bullet.SetFather(this);

@@ -41,6 +41,13 @@ public class MonsterObj : TankBaseObj
 
 
 
+    //每次从池中取出（激活）时重置状态——对象池三定律之二：取出必重置
+    void OnEnable()
+    {
+        hp = maxHp;
+        nowTime = 0;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -135,8 +142,8 @@ public class MonsterObj : TankBaseObj
     public override void Dead()
     {
         base.Dead();
-        //移动怪物死亡时加分（分值来自Json配置）
-        GamePanel.Instance.AddScore(score);
+        //广播"怪物死亡"事件，UI监听后自行加分（战斗代码不再直接操作UI）
+        EventCenter.Instance.EventTrigger(EEventType.MonsterDead, score);
     }
     private void OnGUI()
     {

@@ -1,5 +1,6 @@
  using System.Collections;
 using System.Collections.Generic;
+using GameFramework;
 using UnityEngine;
 
 public class PlayerObj : TankBaseObj
@@ -51,14 +52,14 @@ public class PlayerObj : TankBaseObj
         //这里不执行 父类的死亡 因为 玩家坦克 摄像机 是它的子对象 如果执行父类死亡
         //会把玩家坦克从场景上移除 那么就间接的移除了 摄像机
         //base.Dead();
-        Time.timeScale = 0;
-        LossPanel.Instance.ShowMe();
+        //广播"玩家死亡"事件，由UI层决定暂停和显示结算面板（战斗代码不再直接操作UI）
+        EventCenter.Instance.EventTrigger(EEventType.PlayerDead, null);
     }
     public override void Wound(TankBaseObj other)
     {
         base.Wound(other);
-        //更新主面板血条
-        GamePanel.Instance.UpdateHP(this.maxHp, this.hp);
+        //广播"玩家受伤"事件（参数：当前血量、最大血量），UI监听后刷新血条
+        EventCenter.Instance.EventTrigger(EEventType.PlayerHurt, new float[] { this.hp, this.maxHp });
     }
 
     public void ChangeWeapon(GameObject weapon)

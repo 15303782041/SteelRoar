@@ -39,13 +39,17 @@ public abstract class TankBaseObj : MonoBehaviour
     }
     public virtual void Dead()
     {
-        //对象死亡就是移除对象
-        Destroy(this.gameObject);
+        //先取死亡特效（要用自身位置，必须在回池前取）
         if(deadEff!=null)
         {
-            GameObject effObj = Instantiate(deadEff, this.transform.position, this.transform.rotation);
-            //特效自带音效，音量/开关/播放统一交给音乐管理器（原为6行手动设置）
+            //特效从池中取出（不再Instantiate）
+            GameObject effObj = PoolManager.Instance.GetObj(deadEff);
+            effObj.transform.position = this.transform.position;
+            effObj.transform.rotation = this.transform.rotation;
+            //特效自带音效，音量/开关/播放统一交给音乐管理器
             MusicManager.Instance.SetSourceVolume(effObj.GetComponent<AudioSource>(), true);
         }
+        //自身回池复用（不再Destroy；玩家在子类重写Dead，不会走到这里）
+        PoolManager.Instance.PushObj(this.gameObject);
     }
 }
