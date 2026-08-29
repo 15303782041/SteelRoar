@@ -5,6 +5,11 @@ using UnityEngine;
 
 public class MonsterObj : TankBaseObj
 {
+    //配置键：在Inspector里填MonsterConfig.json中的monsterName，运行时自动应用对应数值
+    public string monsterName;
+    //击杀得分（会被Json配置覆盖）
+    public int score = 10;
+
     //1.要让坦克 在两点之间 来回移动
     private Transform targetPos;
     public Transform[] randomPos;
@@ -39,7 +44,34 @@ public class MonsterObj : TankBaseObj
     // Start is called before the first frame update
     void Start()
     {
+        InitFromConfig();
         RandomPos();
+    }
+
+    /// <summary>把配置数值灌入坦克属性（工厂生成和场景怪物共用这一个入口）</summary>
+    public void Init(MonsterInfo info)
+    {
+        this.atk = info.atk;
+        this.def = info.def;
+        this.maxHp = info.maxHp;
+        this.hp = info.maxHp;
+        this.moveSpeed = info.moveSpeed;
+        this.fireDis = info.fireDis;
+        this.fireOffsetTime = info.fireOffsetTime;
+        this.score = info.score;
+    }
+
+    /// <summary>场景中手动摆放的怪物：Start时按monsterName查Json应用数值；查不到保留Inspector数值并告警</summary>
+    private void InitFromConfig()
+    {
+        if (string.IsNullOrEmpty(monsterName))
+            return;
+
+        MonsterInfo info = MonsterFactory.GetInfo(monsterName);
+        if (info != null)
+            Init(info);
+        else
+            Debug.LogWarning($"怪物[{gameObject.name}]未在MonsterConfig.json中找到配置：{monsterName}，沿用Inspector数值");
     }
 
     // Update is called once per frame
@@ -99,8 +131,8 @@ public class MonsterObj : TankBaseObj
     public override void Dead()
     {
         base.Dead();
-        //移动怪物死亡时加分
-        GamePanel.Instance.AddScore(10);
+        //移动怪物死亡时加分（分值来自Json配置）
+        GamePanel.Instance.AddScore(score);
     }
     private void OnGUI()
     {

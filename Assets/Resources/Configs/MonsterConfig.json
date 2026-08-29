@@ -1,0 +1,26 @@
+{
+  "monsters": [
+    {
+      "monsterName": "Monster1",
+      "prefabName": "Monster1",
+      "atk": 10,
+      "def": 0,
+      "maxHp": 50,
+      "moveSpeed": 5,
+      "fireDis": 8,
+      "fireOffsetTime": 1.5,
+      "score": 10
+    },
+    {
+      "monsterName": "Tower",
+      "prefabName": "MonsterTower",
+      "atk": 15,
+      "def": 2,
+      "maxHp": 80,
+      "moveSpeed": 0,
+      "fireDis": 10,
+      "fireOffsetTime": 2.0,
+      "score": 30
+    }
+  ]
+}
