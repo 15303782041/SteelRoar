@@ -148,6 +148,12 @@ public class BossObj : TankBaseObj
         charging = true;
     }
 
+    /// <summary>实现基类抽象方法：Boss的"开火"即一轮扇形弹幕</summary>
+    public override void Fire()
+    {
+        FireBarrage();
+    }
+
     /// <summary>扇形弹幕：以玩家方向为中心均匀展开，全部走对象池</summary>
     private void FireBarrage()
     {
