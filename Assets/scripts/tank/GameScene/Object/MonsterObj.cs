@@ -69,7 +69,11 @@ public class MonsterObj : TankBaseObj
 
         MonsterInfo info = MonsterFactory.GetInfo(monsterName);
         if (info != null)
+        {
             Init(info);
+            //配置生效的可见凭据：Console出现这行=Json已应用；没出现=没生效
+            Debug.Log($"[{gameObject.name}] 应用Json配置 {info.monsterName}：maxHp={info.maxHp} atk={info.atk} def={info.def} 移速={info.moveSpeed} 开火间隔={info.fireOffsetTime} 得分={info.score}");
+        }
         else
             Debug.LogWarning($"怪物[{gameObject.name}]未在MonsterConfig.json中找到配置：{monsterName}，沿用Inspector数值");
     }
