@@ -183,13 +183,25 @@ PrefabInstance:
       value: Monster1
       objectReference: {fileID: 0}
     - target: {fileID: 6203801931483045224, guid: dfa7e044647aa6d4b8bc9d886c75c627, type: 3}
+      propertyPath: hp
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 6203801931483045224, guid: dfa7e044647aa6d4b8bc9d886c75c627, type: 3}
       propertyPath: hpBk
       value: 
       objectReference: {fileID: 10305, guid: 0000000000000000f000000000000000, type: 0}
     - target: {fileID: 6203801931483045224, guid: dfa7e044647aa6d4b8bc9d886c75c627, type: 3}
+      propertyPath: maxHp
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 6203801931483045224, guid: dfa7e044647aa6d4b8bc9d886c75c627, type: 3}
       propertyPath: maxHpBK
       value: 
       objectReference: {fileID: 2800000, guid: 003486d835e4cc04e9716c9a0bc2105a, type: 3}
+    - target: {fileID: 6203801931483045224, guid: dfa7e044647aa6d4b8bc9d886c75c627, type: 3}
+      propertyPath: monsterName
+      value: Monster1
+      objectReference: {fileID: 0}
     - target: {fileID: 6203801931483045224, guid: dfa7e044647aa6d4b8bc9d886c75c627, type: 3}
       propertyPath: lookAtTarget
       value: 
