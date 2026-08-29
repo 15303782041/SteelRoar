@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using GameFramework;
 using UnityEngine;
 
 public class BulletObj : MonoBehaviour
@@ -52,7 +53,9 @@ public class BulletObj : MonoBehaviour
                 audioS.mute = !GameDataMgr.Instance.musicData.isOpenSound;
 
             }
-            Destroy(this.gameObject);
+            //子弹回池复用（不再Destroy，消除运行时GC）
+            //本对象飞行期间无可变状态（moveSpeed恒定、fatherObj每次发射时重设），无需额外重置
+            PoolManager.Instance.PushObj(this.gameObject);
         }
         
     }

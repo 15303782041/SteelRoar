@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using GameFramework;
 using UnityEngine;
 
 public class MonsterObj : TankBaseObj
@@ -85,12 +86,15 @@ public class MonsterObj : TankBaseObj
     {
         for (int i = 0; i < shootPos.Length; i++)
         {
-            GameObject obj = Instantiate(bulletObj, shootPos[i].position, shootPos[i].rotation);
+            //从对象池取子弹（不再Instantiate，循环复用消除GC）
+            GameObject obj = PoolManager.Instance.GetObj(bulletObj);
+            obj.transform.position = shootPos[i].position;
+            obj.transform.rotation = shootPos[i].rotation;
             //设计子弹的拥有者 方便之后进行伤害计算
             BulletObj bullet = obj.GetComponent<BulletObj>();
             bullet.SetFather(this);
         }
-        
+
     }
     public override void Dead()
     {
