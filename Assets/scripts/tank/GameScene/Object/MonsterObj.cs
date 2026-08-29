@@ -251,29 +251,33 @@ public class MonsterObj : TankBaseObj
         if (hpBarRoot != null)
             return;
 
-        hpBarRoot = new GameObject("HpBar").transform;
+        //标准姿势：UI组件在构造时原子化创建。
+        //先new空物体再AddComponent<Image>的话，Image要求的RectTransform会替换掉
+        //旧Transform，手里先拿住的Transform引用就变成"已销毁"→MissingReferenceException
+        GameObject barGo = new GameObject("HpBar", typeof(Canvas), typeof(Image));
+        hpBarRoot = barGo.transform;
         hpBarRoot.SetParent(this.transform);
         hpBarRoot.localPosition = new Vector3(0, 2.6f, 0);
         hpBarRoot.localScale = Vector3.one * 0.01f;
 
-        Canvas canvas = hpBarRoot.gameObject.AddComponent<Canvas>();
+        Canvas canvas = barGo.GetComponent<Canvas>();
         canvas.renderMode = RenderMode.WorldSpace;
 
         //背景条（半透明黑）
-        Image bg = hpBarRoot.gameObject.AddComponent<Image>();
+        Image bg = barGo.GetComponent<Image>();
         bg.rectTransform.sizeDelta = new Vector2(200, 24);
         bg.color = new Color(0, 0, 0, 0.6f);
 
         //填充条（Filled类型，fillAmount=血量比例）
-        GameObject fillObj = new GameObject("Fill");
+        GameObject fillObj = new GameObject("Fill", typeof(Image));
         fillObj.transform.SetParent(hpBarRoot, false);
-        hpFill = fillObj.AddComponent<Image>();
+        hpFill = fillObj.GetComponent<Image>();
         hpFill.rectTransform.sizeDelta = new Vector2(190, 18);
         hpFill.color = Color.red;
         hpFill.type = Image.Type.Filled;
         hpFill.fillMethod = Image.FillMethod.Horizontal;
 
-        hpBarRoot.gameObject.SetActive(false);
+        barGo.SetActive(false);
     }
 
     /// <summary>受伤显示3秒；显示期间面向摄像机并刷新血量比例</summary>
@@ -286,8 +290,10 @@ public class MonsterObj : TankBaseObj
         if (showTime > 0)
         {
             hpFill.fillAmount = maxHp > 0 ? (float)hp / maxHp : 0;
-            //血条始终面向摄像机（世界空间UI的标配）
-            hpBarRoot.forward = Camera.main.transform.forward;
+            //血条始终面向摄像机（世界空间UI的标配），Camera.main判空防切换场景瞬间报错
+            Camera cam = Camera.main;
+            if (cam != null)
+                hpBarRoot.forward = cam.transform.forward;
         }
     }
 
