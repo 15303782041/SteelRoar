@@ -6,20 +6,29 @@ using UnityEngine;
 public class BulletObj : MonoBehaviour
 {
     public float moveSpeed = 50;
+    //存活上限：没命中任何对象的子弹到时强制回池，防止泄漏堆积
+    public float lifeTime = 3;
+    private float nowLife = 0;
     //谁发射的子弹
     public TankBaseObj fatherObj;
     public GameObject effObj;
 
-    // Start is called before the first frame update
-    void Start()
+    //每次从池中取出（激活）时重置存活计时
+    void OnEnable()
     {
-        
+        nowLife = 0;
     }
 
     // Update is called once per frame
     void Update()
     {
         this.transform.Translate(Vector3.forward * moveSpeed * Time.deltaTime);
+
+        nowLife += Time.deltaTime;
+        if (nowLife >= lifeTime)
+        {
+            PoolManager.Instance.PushObj(this.gameObject);
+        }
     }
 
     //和别人碰撞时触发

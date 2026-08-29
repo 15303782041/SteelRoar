@@ -16,7 +16,8 @@ namespace GameFramework
             fatherObj = new GameObject(obj.name + "Pool");
             fatherObj.transform.SetParent(poolRootObj.transform);
             poolQueue = new Queue<GameObject>();
-            PushObj(obj);
+            // 注意：这里不入队！首个对象由 PoolManager.PushObj 统一入队，
+            // 否则同一对象会被入队两次，导致一发子弹被"传唤"两次的诡异bug
         }
 
         public GameObject GetObj()
@@ -57,6 +58,16 @@ namespace GameFramework
                 obj = poolDic[prefab.name].GetObj();
             else
                 obj = Instantiate(prefab);
+
+            // 复用对象必须清空物理遗留状态：
+            // 刚体速度不清零的话，对象会带着上一次"飞行"攒下的重力下坠速度复活，
+            // 越复用坠得越快（Destroy旧方案每次都是全新对象，所以教程代码从没暴露过这个问题）
+            Rigidbody rb = obj.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.velocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
             return obj;
         }
 
