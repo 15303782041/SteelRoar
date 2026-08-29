@@ -271,14 +271,15 @@ public class MonsterObj : TankBaseObj
         bg.rectTransform.sizeDelta = new Vector2(200, 24);
         bg.color = new Color(0, 0, 0, 0.6f);
 
-        //填充条（Filled类型，fillAmount=血量比例）
+        //填充条（红色，轴心设在左边缘：血量减少时从右侧缩短）
+        //注意：不用Image的Filled/fillAmount——没有Sprite的Image填充模式不生效
         GameObject fillObj = new GameObject("Fill", typeof(Image));
         fillObj.transform.SetParent(hpBarRoot, false);
         hpFill = fillObj.GetComponent<Image>();
         hpFill.rectTransform.sizeDelta = new Vector2(190, 18);
+        hpFill.rectTransform.pivot = new Vector2(0, 0.5f);
+        hpFill.rectTransform.anchoredPosition = new Vector2(-95, 0);
         hpFill.color = Color.red;
-        hpFill.type = Image.Type.Filled;
-        hpFill.fillMethod = Image.FillMethod.Horizontal;
 
         barGo.SetActive(false);
     }
@@ -292,7 +293,9 @@ public class MonsterObj : TankBaseObj
         hpBarRoot.gameObject.SetActive(showTime > 0);
         if (showTime > 0)
         {
-            hpFill.fillAmount = maxHp > 0 ? (float)hp / maxHp : 0;
+            //血量比例=填充条宽度（190为满血宽度）
+            float ratio = maxHp > 0 ? (float)hp / maxHp : 0f;
+            hpFill.rectTransform.sizeDelta = new Vector2(190f * ratio, 18);
             //血条始终面向摄像机（世界空间UI的标配），Camera.main判空防切换场景瞬间报错
             Camera cam = Camera.main;
             if (cam != null)
