@@ -85,6 +85,8 @@ public class BuffChoosePanel : SingletonAutoMono<BuffChoosePanel>
         //原子化构造：Canvas+CanvasScaler+GraphicRaycaster（负责接收点击！）+背景Image与物体同生
         //缺少GraphicRaycaster时面板能渲染但按钮全部点不动——这是代码创建UI的最常见翻车点
         panelRoot = new GameObject("BuffChoosePanel", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster), typeof(Image));
+        //过继给跨场景存活的控制器物体：面板身体不再随场景切换被销毁
+        panelRoot.transform.SetParent(transform, false);
         Canvas canvas = panelRoot.GetComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         CanvasScaler scaler = panelRoot.GetComponent<CanvasScaler>();

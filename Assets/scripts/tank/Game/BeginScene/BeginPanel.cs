@@ -15,9 +15,12 @@ public class BeginPanel : BasePanel<BeginPanel>
 
     // Start is called before the first frame update
     void Start()
-    { 
+    {
         //目的是为了方便控制坦克的头部转向  所有锁定鼠标在窗口内
         Cursor.lockState= CursorLockMode.Confined;
+
+        //读取存档（Json+异或加密）：Console可见历史最高分
+        SaveManager.Instance.Load();
 
         btnBegin.clickEvent += () =>
         {
