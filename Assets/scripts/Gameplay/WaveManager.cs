@@ -75,13 +75,6 @@ public class WaveManager : MonoBehaviour
         StartCoroutine(RunWaves());
     }
 
-    private void OnDestroy()
-    {
-        //场景卸载时解绑，防止残留监听
-        if (onMonsterDead != null)
-            EventCenter.Instance.RemoveEventListener(EEventType.MonsterDead, onMonsterDead);
-    }
-
     /// <summary>波次主循环：逐波执行 刷怪→等全灭→广播波次清除</summary>
     private IEnumerator RunWaves()
     {

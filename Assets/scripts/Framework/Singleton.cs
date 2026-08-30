@@ -22,36 +22,30 @@ namespace GameFramework
     }
 
     /// <summary>
-    /// Mono类单例基类：首次访问时自动创建GameObject并挂载脚本，切换场景不销毁
-    /// 用法：public class PoolManager : SingletonAutoMono<PoolManager> { ... }
-    /// 注意：MonoBehaviour禁止new（必须AddComponent创建），所以与普通单例分成两个基类
+    /// Mono类单例基类：首次访问时自动创建GameObject并挂载脚本，切换场景不销毁。
+    /// 场景里已有同类实例时直接复用（FindFirstObjectByType兜底），
+    /// 退出清理过程中被访问也只会找到"正在销毁"的实例，绝不凭空重建物体
     /// </summary>
     public class SingletonAutoMono<T> : MonoBehaviour where T : MonoBehaviour
     {
         private static T instance;
-        //退出保险丝：应用退出/停止运行时各物体销毁顺序随机，
-        //若其他类的OnDestroy晚于本类销毁并访问Instance，会触发"退出中创建新物体"
-        //→Unity报"Some objects were not cleaned up when closing the scene"
-        private static bool isQuit = false;
 
         public static T Instance
         {
             get
             {
-                //退出过程中不再创建，直接返回现有引用（可能已销毁，由调用方判空）
-                if (instance == null && !isQuit)
+                if (instance == null)
                 {
-                    GameObject obj = new GameObject(typeof(T).Name);
-                    DontDestroyOnLoad(obj);
-                    instance = obj.AddComponent<T>();
+                    instance = FindFirstObjectByType<T>();
+                    if (instance == null)
+                    {
+                        GameObject obj = new GameObject(typeof(T).Name);
+                        DontDestroyOnLoad(obj);
+                        instance = obj.AddComponent<T>();
+                    }
                 }
                 return instance;
             }
-        }
-
-        protected virtual void OnApplicationQuit()
-        {
-            isQuit = true;
         }
     }
 }

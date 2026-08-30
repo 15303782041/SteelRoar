@@ -15,6 +15,10 @@ public class PlayerObj : TankBaseObj
     private int shieldLayers = 0;                                     // 护盾层数（每层挡一次伤害）
     private float lifesteal = 0f;                                     // 每次命中回复的生命
 
+    [Header("联机同步")]
+    private float netSyncTimer = 0;
+    private const float NetSyncInterval = 1f / 15f;                   // 15Hz状态同步
+
     /// <summary>吸血数值（子弹命中敌方坦克时由BulletObj读取）</summary>
     public float LifestealValue => lifesteal;
 
@@ -62,6 +66,25 @@ public class PlayerObj : TankBaseObj
         if (Input.GetMouseButtonDown(0))
         {
             this.Fire();
+        }
+
+        //5.联机：15Hz广播自身位姿（车体位置+车体与炮塔朝向）
+        if (NetCenter.Instance.Networking)
+        {
+            netSyncTimer += Time.deltaTime;
+            if (netSyncTimer >= NetSyncInterval)
+            {
+                netSyncTimer = 0f;
+                TransformPayload p = new TransformPayload
+                {
+                    x = transform.position.x,
+                    y = transform.position.y,
+                    z = transform.position.z,
+                    bodyRy = transform.eulerAngles.y,
+                    headRy = tankHead != null ? tankHead.eulerAngles.y : 0f,
+                };
+                NetCenter.Instance.Send((ushort)MsgId.TransformSync, p);
+            }
         }
 
 

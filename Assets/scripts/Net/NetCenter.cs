@@ -20,6 +20,42 @@ public class NetCenter : SingletonAutoMono<NetCenter>
     public string MyName { get; private set; } = "玩家";
     public string PeerName { get; private set; } = "对方";
 
+    /// <summary>对方坦克的影子（本机生成的、由网络消息驱动的复制体）</summary>
+    public RemoteTank Remote { get; private set; }
+
+    /// <summary>
+    /// 生成"对方坦克"的影子：复用Monster1模型（剥离AI脚本），加RemoteTank驱动。
+    /// 出生点=本机玩家旁边（让双方开局就能互相看见）
+    /// </summary>
+    public void SpawnRemoteTank()
+    {
+        if (Remote != null)
+            return;                              // 已生成过
+
+        GameObject prefab = Resources.Load<GameObject>("Prefabs/Game/Object/Monster1");
+        if (prefab == null)
+        {
+            Debug.LogWarning("[Net] 影子预制体不存在：Monster1");
+            return;
+        }
+
+        PlayerObj localPlayer = FindObjectOfType<PlayerObj>();
+        Vector3 spawnPos = localPlayer != null
+            ? localPlayer.transform.position + localPlayer.transform.forward * 4f
+            : Vector3.zero;
+
+        GameObject go = Instantiate(prefab, spawnPos, Quaternion.identity);
+        Destroy(go.GetComponent<MonsterObj>());  // 剥离AI：影子只由网络消息驱动
+        Remote = go.AddComponent<RemoteTank>();  // 炮台引用来自Monster1预制体自身序列化数据
+        go.name = "RemoteTank";
+    }
+
+    /// <summary>分发TransformSync到影子坦克</summary>
+    private void ApplyTransformSync(TransformPayload p)
+    {
+        Remote?.ApplyTransform(p);
+    }
+
     /// <summary>主机侧：客机带着昵称加入时触发（参数=客机昵称）</summary>
     public event System.Action<string> GuestJoined;
     /// <summary>客机侧：主机应答加入成功时触发（参数=主机昵称）</summary>
@@ -66,6 +102,7 @@ public class NetCenter : SingletonAutoMono<NetCenter>
     /// 没有它：编辑器进程不退出，后台监听线程和端口会跨Play会话残留——
     /// 下次创建房间报"端口被占用"（本机实测踩过的坑）
     /// </summary>
+    /// <summary>退出Play/退出程序时自动关闭网络（释放监听端口与后台线程）</summary>
     private void OnApplicationQuit()
     {
         Shutdown();
@@ -104,6 +141,12 @@ public class NetCenter : SingletonAutoMono<NetCenter>
         //握手消息由中枢内部消化（存昵称+触发事件），不放通用分发
         switch ((MsgId)msg.msgId)
         {
+            case MsgId.TransformSync:
+            {
+                TransformPayload p = JsonUtility.FromJson<TransformPayload>(msg.json);
+                ApplyTransformSync(p);
+                return;
+            }
             case MsgId.ReqJoin:
             {
                 JoinPayload join = JsonUtility.FromJson<JoinPayload>(msg.json);

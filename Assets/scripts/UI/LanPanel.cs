@@ -127,6 +127,10 @@ public class LanPanel : SingletonAutoMono<LanPanel>
         status.text = message;
         panelRoot.SetActive(false);
         GameMgr.Instance.BeginRun();                     // 联机对局也走流程管理器（解冻/重置）
-        SceneMgr.Instance.LoadScene("GameScene", null);
+        SceneMgr.Instance.LoadScene("GameScene", () =>
+        {
+            //场景加载完成后：双方各自生成"对方坦克"的影子（NetCenter内部决定位置与外观）
+            NetCenter.Instance.SpawnRemoteTank();
+        });
     }
 }
