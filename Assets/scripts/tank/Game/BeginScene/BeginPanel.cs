@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using GameFramework;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class BeginPanel : BasePanel<BeginPanel>
 {
