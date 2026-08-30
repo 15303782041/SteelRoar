@@ -5,120 +5,57 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-/// <summary>
-/// Ö÷²Ëµ¥Ãæ°å£ºË«Â·¾¶×ÔÓúÉè¼Æ¡ª¡ª
-/// ¢Ù³¡¾°Êı¾İÍêºÃÊ±£ºÑØÓÃ½Ì³ÌÔ­°æIMGUI°´Å¥Á÷³Ì£»
-/// ¢Ú°´Å¥ĞòÁĞ»¯ÒıÓÃ¶ªÊ§Ê±£¨±¾¹¤³ÌÊµ¼Ê·¢Éú£ºÀúÊ·±£´æ°şµôÁËÒıÓÃ£©£º×Ô¶¯Í£ÓÃÈ«²¿¾ÉIMGUI¿Ø¼ş¡¢
-///   ÔËĞĞÊ±¹¹½¨UGUI²Ëµ¥£¨ÓëÁª»ú/ÔİÍ£Ãæ°åÍ¬Ò»ÌåÏµ£©
-/// </summary>
 public class BeginPanel : BasePanel<BeginPanel>
 {
+
     public CustomGUIButton btnBegin;
     public CustomGUIButton btnSetting;
     public CustomGUIButton btnQuit;
     public CustomGUIButton btnRank;
 
-    private GameObject menuCanvas;
+
 
     // Start is called before the first frame update
     void Start()
     {
-        //Ä¿µÄÊÇÎªÁË·½±ã¿ØÖÆÌ¹¿ËµÄÍ·²¿×ªÏò  ËùÓĞËø¶¨Êó±êÔÚ´°¿ÚÄÚ
-        Cursor.lockState = CursorLockMode.Confined;
+        //ç›®çš„æ˜¯ä¸ºäº†æ–¹ä¾¿æ§åˆ¶å¦å…‹çš„å¤´éƒ¨è½¬å‘  æ‰€æœ‰é”å®šé¼ æ ‡åœ¨çª—å£å†…
+        Cursor.lockState= CursorLockMode.Confined;
 
-        //¶ÁÈ¡´æµµ£¨Json+Òì»ò¼ÓÃÜ£©£ºConsole¿É¼ûÀúÊ·×î¸ß·Ö
+        //è¯»å–å­˜æ¡£ï¼ˆJson+å¼‚æˆ–åŠ å¯†ï¼‰ï¼šConsoleå¯è§å†å²æœ€é«˜åˆ†
         SaveManager.Instance.Load();
 
-        EnsureEventSystem();
-
-        if (btnBegin != null)
+        btnBegin.clickEvent += () =>
         {
-            //Â·¾¶A£ºĞòÁĞ»¯Á´½ÓÍêºÃ£¬ÑØÓÃ½Ì³ÌÔ­°æIMGUI°´Å¥Á÷³Ì
-            btnBegin.clickEvent += OnBeginClick;
-            btnSetting.clickEvent += () => SettingPanel.Instance.ShowMe();
-            btnQuit.clickEvent += () => QuitPanel.Instance.ShowMe();
-            btnRank.clickEvent += () =>
-            {
-                RankPanel.Instance.ShowMe();
-                HideMe();
-            };
-        }
-        else
-        {
-            //Â·¾¶B£ºÒıÓÃ¶ªÊ§£¨³¡¾°Êı¾İËğ»µ£©¡ª¡ªÍ£ÓÃ¾ÉIMGUI¿Ø¼ş£¬¹¹½¨UGUI²Ëµ¥×ÔÓú
-            DisableLegacyIMGUIControls();
-            BuildMenu();
-        }
-    }
+          //å¼‚æ­¥åˆ‡æ¢åœºæ™¯ï¼ˆåŸä¸ºåŒæ­¥LoadSceneä¼šå¡å¸§ï¼Œæ”¹ç”±SceneMgrç»Ÿä¸€ç®¡ç†ï¼Œåç»­å¯æŒ‚åŠ è½½ç•Œé¢ï¼‰
+          SceneMgr.Instance.LoadScene("Gamescene", null);
+        };
 
-    /// <summary>BeginScene¿ÉÄÜÃ»ÓĞEventSystem£¨½Ì³ÌUIÊÇIMGUIÌåÏµ£©¡ª¡ªÈ·±£´æÔÚ</summary>
-    private void EnsureEventSystem()
-    {
+        btnSetting.clickEvent += () =>
+        {
+            SettingPanel.Instance.ShowMe();
+        };
+
+        btnQuit.clickEvent += () =>
+        {
+            Application.Quit();
+        };
+
+        btnRank.clickEvent += () =>
+        {
+            RankPanel.Instance.ShowMe();
+            HideMe();
+        };
+
+        //è”æœºå¯¹æˆ˜å…¥å£ï¼šUGUIæŒ‰é’®ä¾èµ–EventSystemï¼ˆæœ¬åœºæ™¯æ•™ç¨‹UIæ˜¯IMGUIä½“ç³»ï¼Œæ²¡æœ‰å®ƒâ€”â€”è‡ªåŠ¨è¡¥å»ºï¼‰
         if (FindObjectOfType<EventSystem>() == null)
             new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
-    }
 
-    /// <summary>
-    /// Í£ÓÃÈ«²¿¾ÉIMGUI¿Ø¼ş£¨Ö÷²Ëµ¥°´Å¥/LogoÌùÍ¼£©£¬µ«±£»¤ÉèÖÃ/ÅÅĞĞ°ñ/ÍË³ö×ÓÃæ°åµÄ¿Ø¼ş
-    /// £¨ËüÃÇµÄÏÔÒşÓÉ¸÷×ÔBasePanel¹ÜÀí£¬ÎóÍ£»áÈÃÄÇĞ©Ãæ°å±äÑÆ£©
-    /// </summary>
-    private void DisableLegacyIMGUIControls()
-    {
-        foreach (var gui in FindObjectsOfType<CustomGUIControl>(true))
-        {
-            Transform t = gui.transform;
-            bool inSubPanel = false;
-            while (t != null)
-            {
-                string n = t.name;
-                if (n.Contains("Setting") || n.Contains("Rank") || n.Contains("Quit"))
-                {
-                    inSubPanel = true;
-                    break;
-                }
-                t = t.parent;
-            }
-            if (!inSubPanel)
-                gui.gameObject.SetActive(false);    // ½ûÓÃÎïÌå£¨ÅäºÏDrawGUIÎÀÓï¾ä£¬È·±£²»ÔÙ»æÖÆ£©
-        }
-    }
-
-    /// <summary>¹¹½¨UGUIÖ÷²Ëµ¥£º±êÌâ/×î¸ß·Ö/Îå¸ö¹¦ÄÜ°´Å¥£¨²Ëµ¥Canvas¹ÒÔÚ×ÔÉíÏÂ£¬HideMeÊ±Ò»ÆğÒş²Ø£©</summary>
-    private void BuildMenu()
-    {
-        menuCanvas = new GameObject("MenuCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-        menuCanvas.transform.SetParent(transform, false);   // ¹Ò×ÔÉíÏÂ£ºHideMe/ShowMeÊ±²Ëµ¥¸úËæÏÔÒş
-        Canvas canvas = menuCanvas.GetComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        CanvasScaler scaler = menuCanvas.GetComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920, 1080);
-
-        UIFactory.CreateText(menuCanvas.transform, "Ì¹ ¿Ë ÃÔ ¹¬", 110, new Color(1f, 0.62f, 0.1f))
-            .rectTransform.anchoredPosition = new Vector2(0, 330);
-
-        UIFactory.CreateText(menuCanvas.transform, $"ÀúÊ·×î¸ß·Ö£º{SaveManager.Instance.NowData.highestScore}", 34, new Color(0.75f, 0.85f, 1f))
-            .rectTransform.anchoredPosition = new Vector2(0, 220);
-
-        UIFactory.CreateButton(menuCanvas.transform, "¿ª Ê¼ ÓÎ Ï·", new Vector2(420, 84), new Vector2(0, 100),
-            new Color(0.2f, 0.55f, 0.35f), OnBeginClick);
-        UIFactory.CreateButton(menuCanvas.transform, "Éè ÖÃ ÓÎ Ï·", new Vector2(420, 84), new Vector2(0, 0),
-            new Color(0.35f, 0.4f, 0.55f), () => SettingPanel.Instance.ShowMe());
-        UIFactory.CreateButton(menuCanvas.transform, "ÅÅ ĞĞ °ñ", new Vector2(420, 84), new Vector2(0, -100),
-            new Color(0.25f, 0.4f, 0.7f), () =>
-            {
-                RankPanel.Instance.ShowMe();
-                HideMe();
-            });
-        UIFactory.CreateButton(menuCanvas.transform, "Áª »ú ¶Ô Õ½", new Vector2(420, 84), new Vector2(0, -200),
+        GameObject lanCanvas = new GameObject("LanEntryCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+        lanCanvas.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
+        UIFactory.CreateButton(lanCanvas.transform, "è” æœº å¯¹ æˆ˜", new Vector2(340, 76), new Vector2(0, -400),
             new Color(0.45f, 0.3f, 0.6f), () => LanPanel.Instance.Show());
-        UIFactory.CreateButton(menuCanvas.transform, "ÍË ³ö ÓÎ Ï·", new Vector2(420, 84), new Vector2(0, -300),
-            new Color(0.55f, 0.3f, 0.25f), () => QuitPanel.Instance.ShowMe());
-    }
+        // Update is called once per frame
+      
+}
 
-    /// <summary>¿ªÊ¼ÓÎÏ·£ºÒì²½¼ÓÔØÕ½¶·³¡¾°£¨Í³Ò»×ßSceneMgr£¬×Ô¶¯´ø¼ÓÔØ½ø¶È£©</summary>
-    private void OnBeginClick()
-    {
-        SceneMgr.Instance.LoadScene("Gamescene", null);
-    }
 }
