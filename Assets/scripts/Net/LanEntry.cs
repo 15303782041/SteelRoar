@@ -64,7 +64,7 @@ public static class LanEntry
     /// <summary>BeginScene可能没有EventSystem（教程UI是IMGUI体系）——确保存在</summary>
     private static void EnsureEventSystem()
     {
-        if (FindObjectOfType<EventSystem>() == null)
+        if (Object.FindFirstObjectByType<EventSystem>() == null)
             new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
     }
 
