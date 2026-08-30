@@ -6,14 +6,14 @@ using UnityEngine;
 public class BulletObj : MonoBehaviour
 {
     public float moveSpeed = 50;
-    //´æ»îÉÏÏŞ£ºÃ»ÃüÖĞÈÎºÎ¶ÔÏóµÄ×Óµ¯µ½Ê±Ç¿ÖÆ»Ø³Ø£¬·ÀÖ¹Ğ¹Â©¶Ñ»ı
+    //å­˜æ´»ä¸Šé™ï¼šæ²¡å‘½ä¸­ä»»ä½•å¯¹è±¡çš„å­å¼¹åˆ°æ—¶å¼ºåˆ¶å›æ± ï¼Œé˜²æ­¢æ³„æ¼å †ç§¯
     public float lifeTime = 3;
     private float nowLife = 0;
-    //Ë­·¢ÉäµÄ×Óµ¯
+    //è°å‘å°„çš„å­å¼¹
     public TankBaseObj fatherObj;
     public GameObject effObj;
 
-    //Ã¿´Î´Ó³ØÖĞÈ¡³ö£¨¼¤»î£©Ê±ÖØÖÃ´æ»î¼ÆÊ±
+    //æ¯æ¬¡ä»æ± ä¸­å–å‡ºï¼ˆæ¿€æ´»ï¼‰æ—¶é‡ç½®å­˜æ´»è®¡æ—¶
     void OnEnable()
     {
         nowLife = 0;
@@ -31,56 +31,62 @@ public class BulletObj : MonoBehaviour
         }
     }
 
-    //ºÍ±ğÈËÅö×²Ê±´¥·¢
+    //å’Œåˆ«äººç¢°æ’æ—¶è§¦å‘
     private void OnTriggerEnter(Collider other)
     {
-        //×Óµ¯Éä»÷µ½Á¢·½ÌåÉÏÃæ»á±¬Õ¨
-        //Í¬ÑùÉä»÷µ½²»Í¬ÕóÓª¶ÔÏóÒ²»á±¬Õ¨
+        //å­å¼¹å°„å‡»åˆ°ç«‹æ–¹ä½“ä¸Šé¢ä¼šçˆ†ç‚¸
+        //åŒæ ·å°„å‡»åˆ°ä¸åŒé˜µè¥å¯¹è±¡ä¹Ÿä¼šçˆ†ç‚¸
         if (other.CompareTag("Cube")|| other.CompareTag("Player") && fatherObj.CompareTag("Monster")
             || other.CompareTag("Monster") && fatherObj.CompareTag("Player")) 
         { 
-            //ÅĞ¶ÏÊÇ·ñÊÜÉË
-            //µÃµ½Åö×²µ½µÄ¶ÔÏóÉíÉÏ ÊÇ·ñÓĞÌ¹¿ËÏà¹ØµÄ½Å±¾ ÎÒÃÇÓÃÀïÊÏÌæ»»Ô­Ôò
-            //Í¨¹ı¸¸ÀàÈ¥»ñÈ¡
+            //åˆ¤æ–­æ˜¯å¦å—ä¼¤
+            //å¾—åˆ°ç¢°æ’åˆ°çš„å¯¹è±¡èº«ä¸Š æ˜¯å¦æœ‰å¦å…‹ç›¸å…³çš„è„šæœ¬ æˆ‘ä»¬ç”¨é‡Œæ°æ›¿æ¢åŸåˆ™
+            //é€šè¿‡çˆ¶ç±»å»è·å–
             TankBaseObj obj = other.GetComponent<TankBaseObj>();
             if(obj != null)
             {
                 obj.Wound(fatherObj);
-                //ÎüÑªBuff£ºÍæ¼ÒÃüÖĞµĞ·½Ì¹¿ËÊ±»Ø¸´ÉúÃü
+                //å¸è¡€Buffï¼šç©å®¶å‘½ä¸­æ•Œæ–¹å¦å…‹æ—¶å›å¤ç”Ÿå‘½
                 if (fatherObj is PlayerObj player && player.LifestealValue > 0)
                     player.Heal(player.LifestealValue);
 
-                //ÔªËØµ¯ÖÖ£¨Íæ¼Ò×Óµ¯×¨Êô£©£º°´Buff²ãÊı¸½¼Ó±ù¶³/È¼ÉÕ
+                //å…ƒç´ å¼¹ç§ï¼ˆç©å®¶å­å¼¹ä¸“å±ï¼‰ï¼šæŒ‰Buffå±‚æ•°é™„åŠ å†°å†»/ç‡ƒçƒ§
                 if (fatherObj is PlayerObj p && obj is MonsterObj monster)
                 {
-                    float freezeValue = p.GetBuffValue(BuffType.Freeze);   // Ã¿²ã0.2¼õËÙ
+                    float freezeValue = p.GetBuffValue(BuffType.Freeze);   // æ¯å±‚0.2å‡é€Ÿ
                     if (freezeValue > 0)
                         monster.ApplySlow(1f - freezeValue, 2f);
 
-                    int burnDps = Mathf.RoundToInt(p.GetBuffValue(BuffType.Burn));  // Ã¿²ã4µã/Ãë
+                    int burnDps = Mathf.RoundToInt(p.GetBuffValue(BuffType.Burn));  // æ¯å±‚4ç‚¹/ç§’
                     if (burnDps > 0)
                         monster.ApplyBurn(burnDps, 2f);
                 }
             }
+            else if (other.GetComponent<RemoteTank>() != null && fatherObj is PlayerObj shooter)
+            {
+                //è”æœºï¼šå‘½ä¸­"å¯¹æ–¹å¦å…‹çš„å½±å­"â€”â€”å½±å­æ˜¯ç©ºå£³ï¼ˆæ²¡æœ‰TankBaseObjç»„ä»¶ï¼‰ï¼Œ
+                //æ”¹ä¸ºæŠŠä¼¤å®³é€šçŸ¥å¯¹ç«¯ç»“ç®—ï¼ˆV1å‡»ä¸­è€…ç®—è´¦ï¼šä¼¤å®³=æˆ‘çš„æ”»å‡»åŠ›ï¼Œå¯¹ç«¯æŒ‰è‡ªèº«é˜²å¾¡æ‰£è¡€ï¼‰
+                NetCenter.Instance.Send((ushort)MsgId.Damage, new DamagePayload { dmg = shooter.atk });
+            }
                
 
-            //µ±×Óµ¯Ïú»ÙÊ± ¿ÉÒÔ´´½¨Ò»¸ö±¬Õ¨ÌØĞ§
+            //å½“å­å¼¹é”€æ¯æ—¶ å¯ä»¥åˆ›å»ºä¸€ä¸ªçˆ†ç‚¸ç‰¹æ•ˆ
             if(effObj != null)
             {
-                //ÌØĞ§´Ó³ØÖĞÈ¡³ö£¨²»ÔÙInstantiate£©£¬ÒôÁ¿/¿ª¹ØÍ³Ò»½»¸øÒôÀÖ¹ÜÀíÆ÷
+                //ç‰¹æ•ˆä»æ± ä¸­å–å‡ºï¼ˆä¸å†Instantiateï¼‰ï¼ŒéŸ³é‡/å¼€å…³ç»Ÿä¸€äº¤ç»™éŸ³ä¹ç®¡ç†å™¨
                 GameObject eff = PoolManager.Instance.GetObj(effObj);
                 eff.transform.position = this.transform.position;
                 eff.transform.rotation = this.transform.rotation;
                 MusicManager.Instance.SetSourceVolume(eff.GetComponent<AudioSource>());
             }
-            //×Óµ¯»Ø³Ø¸´ÓÃ£¨²»ÔÙDestroy£¬Ïû³ıÔËĞĞÊ±GC£©
-            //±¾¶ÔÏó·ÉĞĞÆÚ¼äÎŞ¿É±ä×´Ì¬£¨moveSpeedºã¶¨¡¢fatherObjÃ¿´Î·¢ÉäÊ±ÖØÉè£©£¬ÎŞĞè¶îÍâÖØÖÃ
+            //å­å¼¹å›æ± å¤ç”¨ï¼ˆä¸å†Destroyï¼Œæ¶ˆé™¤è¿è¡Œæ—¶GCï¼‰
+            //æœ¬å¯¹è±¡é£è¡ŒæœŸé—´æ— å¯å˜çŠ¶æ€ï¼ˆmoveSpeedæ’å®šã€fatherObjæ¯æ¬¡å‘å°„æ—¶é‡è®¾ï¼‰ï¼Œæ— éœ€é¢å¤–é‡ç½®
             PoolManager.Instance.PushObj(this.gameObject);
         }
         
     }
 
-    //ÉèÖÃÓµÓĞÕß
+    //è®¾ç½®æ‹¥æœ‰è€…
     public void SetFather(TankBaseObj obj)
     {
         fatherObj = obj;

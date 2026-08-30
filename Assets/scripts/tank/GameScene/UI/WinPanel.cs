@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class WinPanel : BasePanel<WinPanel>
 {
-    //¹ØÁª¿Ø¼ş
+    //å…³è”æ§ä»¶
     public CustomGUIInput inputInfo;
     public CustomGUIButton btnSure;
     // Start is called before the first frame update
@@ -13,12 +13,16 @@ public class WinPanel : BasePanel<WinPanel>
     {
         btnSure.clickEvent += () =>
         {
-            //°ÑÊı¾İ¼ÇÂ¼µ½ÅÅĞĞ°ñÖĞ
+            //æŠŠæ•°æ®è®°å½•åˆ°æ’è¡Œæ¦œä¸­
             GameDataMgr.Instance.AddRankInfo(inputInfo.content.text,
                 GamePanel.Instance.nowScore,
                 GamePanel.Instance.nowTime);
 
-            //·µ»ØÖ÷²Ëµ¥Í³Ò»×ßÁ÷³Ì¹ÜÀíÆ÷£¨ÖØÖÃÊ±ÖÓ/ÊÕÆğĞü¸¡Ãæ°å/Òì²½¼ÓÔØ£©
+            //è”æœºï¼šå…ˆå‘ŠçŸ¥å¯¹æ–¹"æˆ‘ç¦»å¼€æœ¬å±€"ï¼ˆå¯¹æ–¹å¼¹æç¤ºå¹¶æ–­å¼€ï¼‰å†å›ä¸»èœå•
+            if (NetCenter.Instance.Networking)
+                NetCenter.Instance.NotifyLeaveAndShutdown();
+
+        //è¿”å›ä¸»èœå•ç»Ÿä¸€èµ°æµç¨‹ç®¡ç†å™¨ï¼ˆé‡ç½®æ—¶é’Ÿ/æ”¶èµ·æ‚¬æµ®é¢æ¿/å¼‚æ­¥åŠ è½½ï¼‰
             GameMgr.Instance.BackToBeginScene();
         };
 

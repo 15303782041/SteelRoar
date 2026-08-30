@@ -2,8 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using GameFramework;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 public class BeginPanel : BasePanel<BeginPanel>
 {
@@ -18,15 +16,15 @@ public class BeginPanel : BasePanel<BeginPanel>
     // Start is called before the first frame update
     void Start()
     {
-        //Ä¿µÄÊÇÎªÁË·½±ã¿ØÖÆÌ¹¿ËµÄÍ·²¿×ªÏò  ËùÓĞËø¶¨Êó±êÔÚ´°¿ÚÄÚ
+        //ç›®çš„æ˜¯ä¸ºäº†æ–¹ä¾¿æ§åˆ¶å¦å…‹çš„å¤´éƒ¨è½¬å‘  æ‰€æœ‰é”å®šé¼ æ ‡åœ¨çª—å£å†…
         Cursor.lockState= CursorLockMode.Confined;
 
-        //¶ÁÈ¡´æµµ£¨Json+Òì»ò¼ÓÃÜ£©£ºConsole¿É¼ûÀúÊ·×î¸ß·Ö
+        //è¯»å–å­˜æ¡£ï¼ˆJson+å¼‚æˆ–åŠ å¯†ï¼‰ï¼šConsoleå¯è§å†å²æœ€é«˜åˆ†
         SaveManager.Instance.Load();
 
         btnBegin.clickEvent += () =>
         {
-          //Òì²½ÇĞ»»³¡¾°£¨Ô­ÎªÍ¬²½LoadScene»á¿¨Ö¡£¬¸ÄÓÉSceneMgrÍ³Ò»¹ÜÀí£¬ºóĞø¿É¹Ò¼ÓÔØ½çÃæ£©
+          //å¼‚æ­¥åˆ‡æ¢åœºæ™¯ï¼ˆåŸä¸ºåŒæ­¥LoadSceneä¼šå¡å¸§ï¼Œæ”¹ç”±SceneMgrç»Ÿä¸€ç®¡ç†ï¼Œåç»­å¯æŒ‚åŠ è½½ç•Œé¢ï¼‰
           SceneMgr.Instance.LoadScene("Gamescene", null);
         };
 
@@ -46,16 +44,9 @@ public class BeginPanel : BasePanel<BeginPanel>
             HideMe();
         };
 
-        //Áª»ú¶ÔÕ½Èë¿Ú£ºUGUI°´Å¥ÒÀÀµEventSystem£¨±¾³¡¾°½Ì³ÌUIÊÇIMGUIÌåÏµ£¬Ã»ÓĞËü¡ª¡ª×Ô¶¯²¹½¨£©
-        if (FindObjectOfType<EventSystem>() == null)
-            new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
-
-        GameObject lanCanvas = new GameObject("LanEntryCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-        lanCanvas.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
-        UIFactory.CreateButton(lanCanvas.transform, "Áª »ú ¶Ô Õ½", new Vector2(340, 76), new Vector2(0, -400),
-            new Color(0.45f, 0.3f, 0.6f), () => LanPanel.Instance.Show());
-        // Update is called once per frame
-      
+        //è”æœºå¯¹æˆ˜å…¥å£ç”±LanEntryé™æ€è‡ªä¸¾ç»Ÿä¸€åˆ›å»ºï¼ˆä¸ä¸»èœå•è§£è€¦ï¼Œè¿›æˆ˜æ–—è‡ªåŠ¨éšè—ï¼‰â€”â€”
+        //æœ¬ç±»ç»ä¸å†è‡ªå»ºå…¥å£æŒ‰é’®ï¼šä¸¤å¤„å„å»ºä¸€ä¸ª=ä¸»èœå•å‡ºç°ä¸¤ä¸ª"è”æœºå¯¹æˆ˜"ï¼ˆDay N5å®ä¿®ï¼‰
+              
 }
 
 }

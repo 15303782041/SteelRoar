@@ -57,6 +57,9 @@ public class WaveManager : MonoBehaviour
         if (NetCenter.Instance.Networking)
         {
             Debug.Log("[Wave] 联机模式：波次系统关闭（V1对战不含怪物）");
+            CleanupSoloOnlyObjects();
+            SeparateLanSpawn();
+            GrantLanInitialWeapon();
             enabled = false;
             return;
         }
@@ -131,6 +134,71 @@ public class WaveManager : MonoBehaviour
 
         //所有波次清空 → 广播胜利
         EventCenter.Instance.EventTrigger(EEventType.GameWin, null);
+    }
+
+    /// <summary>
+    /// 联机清场：移除单机专属的场景物体——
+    /// ①场景摆的Monster1（带完整AI，PvP里会主动攻击双方，看起来像凭空冒出的"NPC坦克"）；
+    /// ②MonsterTower炮塔（同为单机敌人）；③EndPoint终点（单机胜利条件，联机压过会误弹单机胜利面板）。
+    /// 武器/道具奖励箱保留（联机的地图资源）。影子同样用Monster1模型，靠RemoteTank组件区分防误删
+    /// </summary>
+    private void CleanupSoloOnlyObjects()
+    {
+        foreach (MonsterObj m in FindObjectsByType<MonsterObj>(FindObjectsSortMode.None))
+            if (m.GetComponent<RemoteTank>() == null)
+                Destroy(m.gameObject);
+
+        foreach (MonsterTower tower in FindObjectsByType<MonsterTower>(FindObjectsSortMode.None))
+            Destroy(tower.gameObject);
+
+        foreach (EndPoint ep in FindObjectsByType<EndPoint>(FindObjectsSortMode.None))
+            Destroy(ep.gameObject);
+    }
+
+    /// <summary>
+    /// 联机开局发放基础武器：玩家出生不带武器，单机靠出生点旁的武器奖励箱起步——
+    /// 联机出生点离奖励箱远，没武器就打不了箱子、拿不到奖励，输出手段直接死锁。
+    /// 武器引用从场景WeaponReward的weaponObj[0]取（基础炮）：两端拿到同一把枪，保证公平
+    /// </summary>
+    private void GrantLanInitialWeapon()
+    {
+        if (player == null)
+            return;
+
+        WeaponReward reward = FindFirstObjectByType<WeaponReward>();
+        if (reward == null || reward.weaponObj == null || reward.weaponObj.Length == 0)
+        {
+            Debug.LogWarning("[Net] 场景无WeaponReward（或其武器列表为空），联机初始武器发放失败");
+            return;
+        }
+        player.GetComponent<PlayerObj>().ChangeWeapon(reward.weaponObj[0]);
+        Debug.Log("[Net] 联机初始武器已发放");
+    }
+
+    /// <summary>
+    /// 联机出生点分离：双方加载同一份场景，玩家会出生在同一点，彼此的影子同步后也被
+    /// 拉向同一个位置——两台坦克叠在一起时，贴脸出膛的子弹会互相打出"幻影伤害"
+    /// （打中叠着的影子=给对方发幻影Damage；对方的表现弹出生就插在我方碰撞体里=我方莫名掉血）。
+    /// 规则确定性：主机固定用第一个出生点、客机用最后一个，两端无需协商
+    /// </summary>
+    private void SeparateLanSpawn()
+    {
+        if (player == null)
+            return;
+
+        if (spawnPoints != null && spawnPoints.Length > 0)
+        {
+            Transform mine = NetCenter.Instance.IsHost
+                ? spawnPoints[0]
+                : spawnPoints[spawnPoints.Length - 1];
+            player.position = mine.position;
+            player.rotation = mine.rotation;
+        }
+        else if (!NetCenter.Instance.IsHost)
+        {
+            //没有配置出生点的兜底：客机硬偏移8米，至少不叠在一起
+            player.position += Vector3.right * 8f;
+        }
     }
 
     /// <summary>按配置生成一只怪物：随机出生点+随机类型，并注入运行时依赖</summary>

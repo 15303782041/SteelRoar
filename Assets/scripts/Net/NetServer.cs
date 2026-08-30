@@ -78,6 +78,12 @@ public class NetServer
     public ConcurrentQueue<NetMsg> receiveQueue = new ConcurrentQueue<NetMsg>();
     public bool Listening => listener != null;
 
+    /// <summary>是否有客户端会话在线（心跳/超时检测只对"真有对端"的状态运行，主机等待加入期间不算）</summary>
+    public bool HasSessions
+    {
+        get { lock (sessionLock) return sessions.Count > 0; }
+    }
+
     public bool Start(int port)
     {
         try
