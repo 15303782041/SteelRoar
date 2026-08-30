@@ -23,6 +23,12 @@ public abstract class CustomGUIControl : MonoBehaviour
     //提供给外部 绘制GUI控件的方法
     public void DrawGUI()
     {
+        //卫语句：物体未激活或组件被禁用时不绘制。
+        //本方法是被CustomGUIRoot直接调用的（非Unity自动分发），
+        //仅enabled=false挡不住外部调用，必须显式判断
+        if (!isActiveAndEnabled)
+            return;
+
         switch (styleOnOrOff)
         {
             case E_Style_OnOff.On:

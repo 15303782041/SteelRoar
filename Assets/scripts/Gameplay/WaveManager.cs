@@ -53,6 +53,14 @@ public class WaveManager : MonoBehaviour
         //通知流程管理器"本局开始"（顺带完成GameMgr单例创建、读档、解冻时钟）
         GameMgr.Instance.BeginRun();
 
+        //联机模式（V1）：纯PvP对战，不启用单机波次（怪物/Boss为单机内容）
+        if (NetCenter.Instance.Networking)
+        {
+            Debug.Log("[Wave] 联机模式：波次系统关闭（V1对战不含怪物）");
+            enabled = false;
+            return;
+        }
+
         WaveConfig config = JsonManager.Instance.LoadData<WaveConfig>("WaveConfig");
         if (config == null || config.waves == null || config.waves.Count == 0)
         {

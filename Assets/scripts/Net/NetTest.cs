@@ -17,13 +17,13 @@ public class NetTest : MonoBehaviour
     [ContextMenu("1_开主机")]
     void Host()
     {
-        Debug.Log(NetCenter.Instance.StartHost(7777) ? "[Net测试] 主机已监听7777" : "[Net测试] 监听失败");
+        Debug.Log(NetCenter.Instance.StartHost(7777, "tester") ? "[Net测试] 主机已监听7777" : "[Net测试] 监听失败");
     }
 
     [ContextMenu("2_连接本机")]
     void Join()
     {
-        Debug.Log(NetCenter.Instance.JoinGuest("127.0.0.1", 7777)
+        Debug.Log(NetCenter.Instance.JoinGuest("127.0.0.1", 7777, "tester")
             ? "[Net测试] 本机客户端已连接"
             : "[Net测试] 连接失败");
     }

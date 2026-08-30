@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   buffName: "\u71C3\u70E7\u5F39"
   description: "\u5B50\u5F39\u70B9\u71C3\u654C\u4EBA\uFF1A\u6BCF\u5C42\u6BCF\u79D210\u70B9\u4F24\u5BB3\uFF0C\u6301\u7EED2\u79D2"
-  type: 0
+  type: 6
   value: 10
   stackMax: 3
