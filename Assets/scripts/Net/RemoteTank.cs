@@ -1,3 +1,4 @@
+using GameFramework;
 using UnityEngine;
 
 /// <summary>
@@ -8,6 +9,7 @@ using UnityEngine;
 public class RemoteTank : MonoBehaviour
 {
     public Transform tankHead;              // 炮台（预制体自带关联）
+    public GameObject bulletObj;            // 网络表现子弹预制体（生成时由NetCenter从原坦克抓取）
 
     private Vector3 targetPos;              // 目标位置
     private float targetBodyRy;             // 目标车体朝向
@@ -15,6 +17,37 @@ public class RemoteTank : MonoBehaviour
 
     private const float PosLerpSpeed = 10f;
     private const float RotLerpSpeed = 12f;
+
+    /// <summary>
+    /// 对端屏幕上我的开火表现：在本机生成"网络子弹"（打到本机玩家时由其本地结算扣血）。
+    /// 子弹走对象池；飞行与命中判定由NetworkBullet组件负责
+    /// </summary>
+    public void SpawnNetworkBullet(FirePayload p)
+    {
+        if (bulletObj == null)
+            return;
+
+        GameObject obj = PoolManager.Instance.GetObj(bulletObj);
+
+        //剥离教程弹逻辑（它依赖未设置的fatherObj，会NRE），换上网络弹组件
+        BulletObj legacy = obj.GetComponent<BulletObj>();
+        if (legacy != null)
+            Destroy(legacy);
+        NetworkBullet nb = obj.GetComponent<NetworkBullet>();
+        if (nb == null)
+            nb = obj.AddComponent<NetworkBullet>();
+
+        nb.dmg = p.dmg;
+        nb.speed = 30f;
+        obj.transform.position = new Vector3(p.px, p.py, p.pz);
+        obj.transform.rotation = Quaternion.Euler(0f, p.ry, 0f);
+
+        //忽略与影子自身碰撞体的接触：子弹出生点贴近炮口，否则出膛即撞影子直接消失
+        var bulletCol = obj.GetComponent<Collider>();
+        var shadowCol = GetComponent<Collider>();
+        if (bulletCol != null && shadowCol != null)
+            Physics.IgnoreCollision(bulletCol, shadowCol);
+    }
 
     void Update()
     {

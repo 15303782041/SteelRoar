@@ -100,7 +100,17 @@ public class NetServer
     {
         while (true)
         {
-            TcpClient client = listener.AcceptTcpClient();
+            TcpClient client;
+            try
+            {
+                client = listener.AcceptTcpClient();
+            }
+            catch (SocketException)
+            {
+                //监听器已关闭（退出Play时的正常关闭路径）：安静退出线程，
+                //否则阻塞中的Accept被中断会抛SocketException刷屏
+                break;
+            }
             NetSession session = new NetSession(client, OnSessionReceive);
             lock (sessionLock)
                 sessions.Add(session);
