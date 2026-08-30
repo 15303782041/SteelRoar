@@ -23,16 +23,23 @@ public class BeginPanel : BasePanel<BeginPanel>
     // Start is called before the first frame update
     void Start()
     {
-        //目的是为了方便控制坦克的头部转向  所有锁定鼠标在窗口内
-        Cursor.lockState = CursorLockMode.Confined;
-
-        //读取存档（Json+异或加密）：Console可见历史最高分
-        SaveManager.Instance.Load();
-
-        EnsureEventSystem();
-
-        if (btnBegin != null)
+        try
         {
+            Debug.Log("[BeginPanel] Start 1/5 光标锁定");
+            //目的是为了方便控制坦克的头部转向  所有锁定鼠标在窗口内
+            Cursor.lockState = CursorLockMode.Confined;
+
+            Debug.Log("[BeginPanel] Start 2/5 读取存档");
+            //读取存档（Json+异或加密）：Console可见历史最高分
+            SaveManager.Instance.Load();
+
+            Debug.Log("[BeginPanel] Start 3/5 停用旧IMGUI控件");
+            EnsureEventSystem();
+            DisableLegacyIMGUIControls();
+
+            Debug.Log($"[BeginPanel] Start 4/5 按钮引用检测：btnBegin={(btnBegin == null ? "空(走UGUI自愈路径)" : "有效(走原版IMGUI路径)")}");
+            if (btnBegin != null)
+            {
             //路径A：序列化链接完好，沿用教程原版IMGUI按钮流程
             btnBegin.clickEvent += OnBeginClick;
             btnSetting.clickEvent += () => SettingPanel.Instance.ShowMe();
@@ -49,6 +56,16 @@ public class BeginPanel : BasePanel<BeginPanel>
             DisableLegacyIMGUIControls();
             BuildMenu();
         }
+
+        Debug.Log("[BeginPanel] Start 完成");
+    }
+    catch (System.Exception e)
+    {
+        //Start异常全程捕获：Console直接显示死在哪一步
+        Debug.LogError($"[BeginPanel] Start异常：{e}
+{e.StackTrace}");
+    }
+}
     }
 
     /// <summary>BeginScene可能没有EventSystem（教程UI是IMGUI体系）——确保存在</summary>
